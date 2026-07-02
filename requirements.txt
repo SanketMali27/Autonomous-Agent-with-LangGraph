@@ -1,0 +1,23 @@
+# Add your Python dependencies here
+langgraph
+langchain
+langchain-openai
+langchain-community
+
+fastapi
+uvicorn
+
+python-dotenv
+
+qdrant-client
+sentence-transformers
+
+pypdf
+
+tiktoken
+
+openai
+
+pydantic
+
+langsmith

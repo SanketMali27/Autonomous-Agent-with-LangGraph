@@ -1,0 +1,20 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# Git
+.git/
+
+# Docker runtime data
+mongodb-data/
+qdrant_storage/
+
+# IDE
+.vscode/
+
+# Logs
+*.log
