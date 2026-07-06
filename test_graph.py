@@ -1,14 +1,33 @@
 from graph.builder import build_graph
+from memory.checkpoint import create_memory
+from langchain_core.messages import HumanMessage
 
-graph = build_graph()
+with create_memory() as memory:
 
-response = graph.invoke(
-    {
-        "question": "Print numbers from 1 to 10.",
-        "route": "",
-        "retrieved_docs": [],
-        "answer": "",
+    graph = build_graph(memory)
+
+    config = {
+        "configurable": {
+            "thread_id": "user-1"
+        }
     }
-)
 
-print(response["answer"])
+    response = graph.invoke(
+        {
+            "question": "What is the applicant email id?",
+            "route": "",
+            "retrieved_docs": [],
+            "answer": "",
+            "messages": [
+                HumanMessage(content="What is the applicant email id?")
+            ],
+            "retry_count": 0,
+            "retrieval_score": "",
+            "rewritten_query": "",
+            "critic_score": "",
+            "approved": False
+        },
+        config=config,
+    )
+
+    print(response)

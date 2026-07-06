@@ -18,9 +18,9 @@ Do not explain.
 """
 
     code = llm.invoke(prompt).content
-
+    print(f"Generated code:\n{code}")
     code = code.replace("```python", "").replace("```", "").strip()
-
+    print(f"Executing code:\n{code}")
     result = executor.run(code)
 
     state["answer"] = result["output"]
