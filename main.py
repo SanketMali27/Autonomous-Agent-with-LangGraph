@@ -1,1 +1,1 @@
-# TODO: Entry point for the autonomous agent.
+from app.api import app
