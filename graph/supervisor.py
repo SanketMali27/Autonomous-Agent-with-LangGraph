@@ -16,27 +16,30 @@ router = llm.with_structured_output(Route)
 def supervisor_node(state: AgentState):
 
     prompt = f"""
-You are a router.
-check the question and previous messages and choose the best route for the next node to answer the question.ans also check retrival documents
-Return:
-- rag -> questions about uploaded documents
-- web -> latest/current/news information
-- python -> calculations, CSV, data analysis
+    You are a router.
+  
+    Choose exactly one route:
 
-Question:
-{state["question"]}
+    python:
+    Use for calculations, code execution, CSV processing,
+    statistics, and data analysis.
 
-Rretrieved_docs:
-{state["retrieved_docs"]}
-Previous messages:
+    web:
+    Use only when the user explicitly asks for latest,
+    current, recent, news, live, or internet information.
 
-{state['messages']}
-"""
+    rag:
+    Use for all other knowledge questions because uploaded
+    documents must be searched before falling back to web.
+
+    Question:
+    {state["question"]}
+    """
 
     result = router.invoke(prompt)
+
     print("Route:", result.route)
-    print("messages:", state['messages'])
-   # print("retrieved_docs:", state['retrieved_docs'])
+
     state["route"] = result.route
 
     return state

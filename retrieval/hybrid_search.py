@@ -4,9 +4,9 @@ from retrieval.qdrant import QdrantManager
 
 class HybridSearcher:
 
-    COLLECTION_NAME = "documents"
 
     def __init__(self):
+        self.COLLECTION_NAME = "hisotory_docs"
         self.embedding = EmbeddingModel()
         self.qdrant = QdrantManager()
 

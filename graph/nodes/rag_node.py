@@ -40,9 +40,10 @@ def rag_node(state: AgentState):
       """
 
     response = llm.invoke(prompt)
+ 
 
     state["retrieved_docs"] = docs
-   # print("Retrieved docs:", state["retrieved_docs"])
+    print("Retrieved docs:", context)
     state["answer"] = response.content
 
     return state

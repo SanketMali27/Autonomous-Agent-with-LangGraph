@@ -1,5 +1,5 @@
 from fastapi import FastAPI,UploadFile, File, HTTPException
-
+from retrieval.ingest import DocumentIngestor
 from graph.builder import build_graph
 from memory.checkpoint import create_memory
 from app.schemas import ChatRequest, ChatResponse ,ApprovalRequest
@@ -7,7 +7,7 @@ from langgraph.types import Command
 from langchain_core.messages import HumanMessage
 from pathlib import Path
 import shutil
-from retrieval.ingest import DocumentIngestor
+
 
 
 app = FastAPI(
