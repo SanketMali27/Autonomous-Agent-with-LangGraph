@@ -1,16 +1,21 @@
 from retrieval.embeddings import EmbeddingModel
 from retrieval.qdrant import QdrantManager
+from app.config import COLLECTION_NAME 
 
 
 class HybridSearcher:
 
 
     def __init__(self):
-        self.COLLECTION_NAME = "hisotory_docs"
+        self.COLLECTION_NAME = COLLECTION_NAME
         self.embedding = EmbeddingModel()
         self.qdrant = QdrantManager()
 
-    def search(self, query: str, limit: int = 5):
+    def search( self,
+    query: str,
+    limit: int = 5,
+    user_id: str = None,
+    document_id:str | None = None):
 
         query_vector = self.embedding.embed([query])[0]
 
@@ -18,6 +23,12 @@ class HybridSearcher:
             collection_name=self.COLLECTION_NAME,
             query_vector=query_vector,
             limit=limit,
+            user_id=user_id,
+            document_id=document_id,
+
         )
 
-        return [point.payload for point in results]
+        return [
+          {
+          **point.payload,
+          "score": point.score, } for point in results]

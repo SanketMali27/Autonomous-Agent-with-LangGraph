@@ -14,3 +14,6 @@ class AgentState(TypedDict):
     rewritten_query: str
     critic_score: str
     approved: bool
+    document_name: str
+    user_id: str
+    document_id: str | None

@@ -1,4 +1,4 @@
-from uuid import uuid4
+
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -7,10 +7,10 @@ from qdrant_client.models import PointStruct
 
 from retrieval.embeddings import EmbeddingModel
 from retrieval.qdrant import QdrantManager
-
+from datetime import datetime
 from uuid import uuid5, NAMESPACE_URL
 from qdrant_client.models import PointStruct
-from pathlib import Path
+from app.config import COLLECTION_NAME
 
 class DocumentIngestor:
 
@@ -19,7 +19,7 @@ class DocumentIngestor:
 
         self.embedding = EmbeddingModel()
         self.qdrant = QdrantManager()
-        self.COLLECTION_NAME = "hisotory_docs"
+        self.COLLECTION_NAME = COLLECTION_NAME
 
         self.splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
@@ -33,7 +33,7 @@ class DocumentIngestor:
 
 
 
-    def ingest(self, file_path: str):
+    def ingest(self, file_path: str, user_id: str, document_id: str, document_name: str):
 
         loader = PyPDFLoader(file_path)
         documents = loader.load()
@@ -45,12 +45,16 @@ class DocumentIngestor:
 
         points = []
 
-        source = Path(file_path).name
+
 
         for index, (chunk, vector) in enumerate(zip(chunks, vectors)):
 
-            unique_key = f"{source}:{chunk.metadata.get('page', 0)}:{index}"
-
+            unique_key = (
+                    f"{user_id}:"
+                    f"{document_id}:"
+                    f"{chunk.metadata.get('page',0)}:"
+                    f"{index}"
+                )
             point_id = str(
                 uuid5(NAMESPACE_URL, unique_key)
             )
@@ -58,15 +62,19 @@ class DocumentIngestor:
             points.append(
                 PointStruct(
                     id=point_id,
-                    vector=vector,
-                    payload={
-                        "text": chunk.page_content,
-                        "source": source,
-                        "page": chunk.metadata.get("page", 0),
-                        "chunk_index": index,
-                    },
-                )
-            )
+                            vector=vector,
+                        payload={
+                            "text": chunk.page_content,
+                            "user_id": user_id,
+                            "document_id": document_id,
+                            "document_name": document_name,
+                            "page": chunk.metadata.get("page", 0),
+                            "chunk_index": index,
+                            "uploaded_at": datetime.utcnow().isoformat(),
+                            "filetype": "pdf",
+                        },
+                        )
+                    )
 
         self.qdrant.upsert(
             collection_name=self.COLLECTION_NAME,

@@ -39,6 +39,7 @@ def build_graph(memory=None):
     {
         "relevant": "critic_node",
         "irrelevant": "rewrite_node",
+        "web": "web_node",
     },
 )
     graph.add_conditional_edges(

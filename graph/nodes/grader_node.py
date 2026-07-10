@@ -15,8 +15,10 @@ grader = llm.with_structured_output(RetrievalGrade)
 
 def grader_node(state: AgentState):
     
-    if state["retry_count"] >= 2:
-       state["retrieval_score"] = "relevant"
+    retry_count = state.get("retry_count", 0)
+
+    if retry_count >= 2:
+       state["retrieval_score"] = "web"
        return state
 
     context = "\n\n".join(

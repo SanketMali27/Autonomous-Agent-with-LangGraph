@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 from app.llm import llm
 from graph.state import AgentState
-
+from graph.router import rule_based_router
 
 class Route(BaseModel):
     route: str = Field(
@@ -14,6 +14,13 @@ router = llm.with_structured_output(Route)
 
 
 def supervisor_node(state: AgentState):
+    
+    route = rule_based_router(state["question"])
+
+    if route:
+      print("Rule Route:", route)
+      state["route"] = route
+      return state
 
     prompt = f"""
     You are a router.

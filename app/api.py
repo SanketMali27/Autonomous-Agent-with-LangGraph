@@ -7,7 +7,7 @@ from langgraph.types import Command
 from langchain_core.messages import HumanMessage
 from pathlib import Path
 import shutil
-
+from uuid import uuid4
 
 
 app = FastAPI(
@@ -21,10 +21,9 @@ memory = memory_context.__enter__()
 
 graph = build_graph(memory)
 
-
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
-
+    
     config = {
         "configurable": {
             "thread_id": request.thread_id
@@ -32,7 +31,7 @@ def chat(request: ChatRequest):
     }
 
     result = graph.invoke(
-        {
+        {  
             "question": request.question,
             "route": "",
             "retrieved_docs": [],
@@ -45,6 +44,8 @@ def chat(request: ChatRequest):
             "rewritten_query": "",
             "critic_score": "",
             "approved": False,
+             "user_id": "demo_user",
+             "document_id": request.document_id,
         },
         config=config,
     )
@@ -58,7 +59,6 @@ def chat(request: ChatRequest):
             answer=result.get("answer"),
             interrupt=interrupt_data,
         )
-
     return ChatResponse(
         status="completed",
         answer=result.get("answer"),
@@ -109,10 +109,18 @@ def upload_document(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    chunks_count = ingestor.ingest(str(file_path))
+    document_id = str(uuid4())
+    user_id = "demo_user"
 
+    chunks_count = ingestor.ingest(
+            file_path=str(file_path),
+            user_id=user_id,
+            document_id=document_id,
+            document_name=file.filename,
+        )
     return {
         "status": "success",
         "filename": file.filename,
         "chunks_ingested": chunks_count,
+        "document_id": document_id,
     }

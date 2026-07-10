@@ -7,27 +7,14 @@ searcher = HybridSearcher()
 
 def rag_node(state: AgentState):
 
-    docs = searcher.search(state["question"])
+    docs = searcher.search(state["question"], limit=5, document=state.get("document_name"), user_id=state.get("user_id"), document_id=state.get("document_id"))
 
     context = "\n\n".join(
         doc["text"] for doc in docs
     )
+
+
     
-    history = "\n".join(
-    m.content for m in state["messages"]
-      )
-
-    rewrite_prompt = f"""
-    Conversation:
-    {history}
-
-    Rewrite the latest user question into a standalone question.
-    Only return the rewritten question.
-    """
-
-    new_query = llm.invoke(rewrite_prompt).content
-
-    docs = searcher.search(new_query)
 
     prompt = f"""
      Answer using only the provided context.

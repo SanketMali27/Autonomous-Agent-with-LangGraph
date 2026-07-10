@@ -4,6 +4,7 @@ from pydantic import BaseModel
 class ChatRequest(BaseModel):
     question: str
     thread_id: str
+    document_id: str | None = None
 
 
 class ChatResponse(BaseModel):

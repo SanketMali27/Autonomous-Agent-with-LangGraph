@@ -1,6 +1,5 @@
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams
-
+from qdrant_client.models import Distance, VectorParams, Filter,FieldCondition,MatchValue
 from app.config import QDRANT_URL
 
 
@@ -32,9 +31,35 @@ class QdrantManager:
         points=points,
        )
 
-    def search(self,collection_name: str,query_vector: list[float],limit: int = 5,):
-         return self.client.query_points(
-         collection_name=collection_name,
-         query=query_vector,
-         limit=limit,
-          ).points    
+    def search(
+        self,
+        collection_name: str,
+        query_vector: list[float],
+        user_id: str,
+        document_id: str | None = None,
+        limit: int = 5,
+        ):
+
+        conditions = [
+            FieldCondition(
+                key="user_id",
+                match=MatchValue(value=user_id),
+            )
+        ]
+
+        if document_id is not None:
+            conditions.append(
+                FieldCondition(
+                    key="document_id",
+                    match=MatchValue(value=document_id),
+                )
+            )
+
+        query_filter = Filter(must=conditions)
+
+        return self.client.query_points(
+            collection_name=collection_name,
+            query=query_vector,
+            query_filter=query_filter,
+            limit=limit,
+        ).points
