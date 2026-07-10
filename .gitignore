@@ -15,6 +15,6 @@ qdrant_storage/
 
 # IDE
 .vscode/
-
+checkpoints/
 # Logs
 *.log

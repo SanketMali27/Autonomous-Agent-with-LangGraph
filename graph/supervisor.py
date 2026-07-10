@@ -15,6 +15,12 @@ router = llm.with_structured_output(Route)
 
 def supervisor_node(state: AgentState):
     
+    # Explicit document selected → always search that document
+    if state.get("document_id"):
+        print("Document selected → Route: rag")
+        state["route"] = "rag"
+        return state
+
     route = rule_based_router(state["question"])
 
     if route:

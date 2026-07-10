@@ -29,7 +29,7 @@ def chat(request: ChatRequest):
             "thread_id": request.thread_id
         }
     }
-
+    user_id = "user-1"
     result = graph.invoke(
         {  
             "question": request.question,
@@ -44,7 +44,7 @@ def chat(request: ChatRequest):
             "rewritten_query": "",
             "critic_score": "",
             "approved": False,
-             "user_id": "demo_user",
+             "user_id": user_id,
              "document_id": request.document_id,
         },
         config=config,
@@ -96,7 +96,7 @@ ingestor = DocumentIngestor()
 
 
 @app.post("/upload")
-def upload_document(file: UploadFile = File(...)):
+def upload_document(file: UploadFile = File(...),user_id: str = "demo_user"):
 
     if file.content_type != "application/pdf":
         raise HTTPException(
@@ -110,7 +110,6 @@ def upload_document(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
 
     document_id = str(uuid4())
-    user_id = "demo_user"
 
     chunks_count = ingestor.ingest(
             file_path=str(file_path),
