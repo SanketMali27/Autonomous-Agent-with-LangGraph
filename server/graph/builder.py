@@ -1,0 +1,63 @@
+from server.graph.supervisor import supervisor_node
+from server.graph.nodes.rag_node import rag_node
+from server.graph.state import AgentState
+from langgraph.graph import StateGraph, START, END
+from server.graph.nodes.web_node import web_node
+from server.graph.nodes.python_node import python_node
+from server.graph.nodes.grader_node import grader_node
+from server.graph.nodes.rewrite_node import rewrite_node
+from server.graph.nodes.critic_node import critic_node
+from server.graph.nodes.human_review_node import human_review_node
+
+
+def build_graph(memory=None):
+    graph = StateGraph(AgentState)
+
+    graph.add_node("rag_node", rag_node)
+    graph.add_node("web_node", web_node)
+    graph.add_node("supervisor_node", supervisor_node)
+    graph.add_node("python_node", python_node)
+    graph.add_node("grader_node", grader_node)
+    graph.add_node("rewrite_node", rewrite_node)
+    graph.add_node("critic_node", critic_node)
+    graph.add_node("human_review_node", human_review_node)
+
+    graph.add_edge(START, "supervisor_node")
+    graph.add_conditional_edges(
+        "supervisor_node",
+        lambda state: state["route"],
+        {
+            "rag": "rag_node",
+            "web": "web_node",
+            "python": "python_node",
+        },
+    )
+    graph.add_edge("rag_node", "grader_node")
+    graph.add_conditional_edges(
+    "grader_node",
+    lambda state: state["retrieval_score"],
+    {
+        "relevant": "critic_node",
+        "irrelevant": "rewrite_node",
+        "web": "web_node",
+    },
+)
+    graph.add_conditional_edges(
+    "critic_node",
+    lambda state: state["critic_score"],
+    {
+        "supported": "human_review_node",
+        "unsupported": "rewrite_node",
+    }
+    )
+
+    graph.add_edge("human_review_node",END)
+    graph.add_edge("rewrite_node", "rag_node")
+   
+    graph.add_edge("web_node", END)
+    graph.add_edge("python_node", END)
+    
+    if memory:
+        return graph.compile(checkpointer=memory)
+
+    return graph.compile()
