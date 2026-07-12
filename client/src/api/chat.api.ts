@@ -16,6 +16,12 @@ export interface ChatResponse {
     } | null;
 }
 
+export interface ApprovalResponse {
+    status: string;
+    approved: boolean;
+    answer: string | null;
+}
+
 export const sendMessage = async (
     data: ChatRequest
 ): Promise<ChatResponse> => {
@@ -23,14 +29,19 @@ export const sendMessage = async (
     return response.data;
 };
 
+
 export const approveAction = async (
     threadId: string,
     approved: boolean
-) => {
-    const response = await api.post("/approve", {
-        thread_id: threadId,
-        approved,
-    });
+): Promise<ApprovalResponse> => {
+
+    const response = await api.post<ApprovalResponse>(
+        "/approve",
+        {
+            thread_id: threadId,
+            approved,
+        }
+    );
 
     return response.data;
 };
