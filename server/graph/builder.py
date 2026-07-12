@@ -1,13 +1,13 @@
-from server.graph.supervisor import supervisor_node
-from server.graph.nodes.rag_node import rag_node
-from server.graph.state import AgentState
+from graph.supervisor import supervisor_node
+from graph.nodes.rag_node import rag_node
+from graph.state import AgentState
 from langgraph.graph import StateGraph, START, END
-from server.graph.nodes.web_node import web_node
-from server.graph.nodes.python_node import python_node
-from server.graph.nodes.grader_node import grader_node
-from server.graph.nodes.rewrite_node import rewrite_node
-from server.graph.nodes.critic_node import critic_node
-from server.graph.nodes.human_review_node import human_review_node
+from graph.nodes.web_node import web_node
+from graph.nodes.python_node import python_node
+from graph.nodes.grader_node import grader_node
+from graph.nodes.rewrite_node import rewrite_node
+from graph.nodes.critic_node import critic_node
+from graph.nodes.human_review_node import human_review_node
 
 
 def build_graph(memory=None):

@@ -5,12 +5,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from qdrant_client.models import PointStruct
 
-from server.retrieval.embeddings import EmbeddingModel
-from server.retrieval.qdrant import QdrantManager
+from retrieval.embeddings import EmbeddingModel
+from retrieval.qdrant import QdrantManager
 from datetime import datetime
 from uuid import uuid5, NAMESPACE_URL
 from qdrant_client.models import PointStruct
-from server.app.config import COLLECTION_NAME
+from app.config import COLLECTION_NAME
 
 class DocumentIngestor:
 

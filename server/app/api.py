@@ -1,9 +1,9 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI,UploadFile, File, HTTPException
-from server.retrieval.ingest import DocumentIngestor
-from server.graph.builder import build_graph
-from server.memory.checkpoint import create_memory
-from server.app.schemas import ChatRequest, ChatResponse ,ApprovalRequest
+from retrieval.ingest import DocumentIngestor
+from graph.builder import build_graph
+from memory.checkpoint import create_memory
+from app.schemas import ChatRequest, ChatResponse ,ApprovalRequest
 from langgraph.types import Command
 from langchain_core.messages import HumanMessage
 from pathlib import Path
@@ -12,8 +12,8 @@ from uuid import uuid4
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from server.database.db import get_db
-from server.database.models import Document
+from database.db import get_db
+from database.models import Document
 
 app = FastAPI(
     title="Autonomous Research & Analytics Agent"

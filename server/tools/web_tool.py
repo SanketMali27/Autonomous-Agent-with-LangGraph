@@ -1,6 +1,6 @@
 from tavily import TavilyClient
 
-from server.app.config import TAVILY_API_KEY
+from app.config import TAVILY_API_KEY
 
 client = TavilyClient(api_key=TAVILY_API_KEY)
 

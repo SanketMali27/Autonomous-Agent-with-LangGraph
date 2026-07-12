@@ -1,5 +1,5 @@
-from server.app.llm import llm
-from server.graph.state import AgentState
+from app.llm import llm
+from graph.state import AgentState
 
 
 def rewrite_node(state: AgentState):
@@ -15,8 +15,7 @@ Question:
 {state["question"]}
 """
 
-    rewritten_query = llm.invoke(prompt).content.strip()
-
+    rewritten_query = llm.invoke(prompt).content.s
     print("Original :", state["question"])
     print("Rewritten:", rewritten_query)
 

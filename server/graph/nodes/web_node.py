@@ -1,5 +1,5 @@
-from server.app.llm import llm
-from server.graph.state import AgentState
+from app.llm import llm
+from graph.state import AgentState
 from tools.web_tool import web_search
 
 
@@ -16,7 +16,6 @@ Use only this information.
 
 Context:
 {context}
-
 Question:
 {state["question"]}
 """

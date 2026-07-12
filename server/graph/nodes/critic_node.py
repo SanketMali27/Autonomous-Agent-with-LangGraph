@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
-from server.app.llm import llm
-from server.graph.state import AgentState
+from app.llm import llm
+from graph.state import AgentState
 
 
 class CriticResult(BaseModel):

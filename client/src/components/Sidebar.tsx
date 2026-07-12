@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useDocumentStore } from "../store/documentStore";
+import FileUpload from "./FileUpload";
 
 export default function Sidebar() {
-    // READ STATE FROM ZUSTAND
     const documents = useDocumentStore(
         (state) => state.documents
     );
@@ -19,8 +19,6 @@ export default function Sidebar() {
         (state) => state.error
     );
 
-
-    // GET ACTIONS FROM ZUSTAND
     const fetchDocuments = useDocumentStore(
         (state) => state.fetchDocuments
     );
@@ -33,46 +31,51 @@ export default function Sidebar() {
         (state) => state.deleteDocument
     );
 
-
-    // RUN WHEN SIDEBAR FIRST MOUNTS
     useEffect(() => {
         fetchDocuments();
     }, [fetchDocuments]);
-
 
     return (
         <aside>
             <h2>Documents</h2>
 
-            {loading && <p>Loading...</p>}
+            <FileUpload />
 
             {error && <p>{error}</p>}
 
-            {documents.map((document) => (
-                <div key={document.document_id}>
+            <div>
+                {documents.map((document) => (
+                    <div key={document.document_id}>
 
-                    <button
-                        onClick={() => selectDocument(document)}
-                    >
-                        {document.document_name}
-                    </button>
+                        <button
+                            onClick={() =>
+                                selectDocument(document)
+                            }
+                        >
+                            {document.document_name}
+                        </button>
 
-                    <button
-                        onClick={() =>
-                            deleteDocument(document.document_id)
-                        }
-                    >
-                        Delete
-                    </button>
+                        <button
+                            onClick={() =>
+                                deleteDocument(
+                                    document.document_id
+                                )
+                            }
+                        >
+                            Delete
+                        </button>
 
-                </div>
-            ))}
+                    </div>
+                ))}
+            </div>
 
             {selectedDocument && (
                 <p>
                     Selected: {selectedDocument.document_name}
                 </p>
             )}
+
+            {loading && <p>Processing...</p>}
         </aside>
     );
 }

@@ -1,6 +1,6 @@
-from server.retrieval.embeddings import EmbeddingModel
-from server.retrieval.qdrant import QdrantManager
-from server.app.config import COLLECTION_NAME 
+from retrieval.embeddings import EmbeddingModel
+from retrieval.qdrant import QdrantManager
+from app.config import COLLECTION_NAME 
 
 
 class HybridSearcher:

@@ -6,6 +6,7 @@ function App() {
       <h1>Autonomous Research Agent</h1>
 
       <Sidebar />
+
     </div>
   );
 }

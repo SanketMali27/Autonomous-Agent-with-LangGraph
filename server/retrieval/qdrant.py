@@ -1,6 +1,6 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, Filter,FieldCondition,MatchValue
-from server.app.config import QDRANT_URL
+from app.config import QDRANT_URL
 from qdrant_client.models import (Filter,FieldCondition,MatchValue,FilterSelector,)
 
 
