@@ -15,7 +15,7 @@ Question:
 {state["question"]}
 """
 
-    rewritten_query = llm.invoke(prompt).content.s
+    rewritten_query = llm.invoke(prompt).content
     print("Original :", state["question"])
     print("Rewritten:", rewritten_query)
 

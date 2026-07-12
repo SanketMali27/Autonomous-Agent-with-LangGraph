@@ -1,12 +1,12 @@
 import Sidebar from "./components/Sidebar";
+import Chat from "./pages/Chat";
 
 function App() {
   return (
     <div>
-      <h1>Autonomous Research Agent</h1>
-
       <Sidebar />
 
+      <Chat />
     </div>
   );
 }
