@@ -1,9 +1,7 @@
-from tools.python_tool import PythonExecutor
+from auth.password import hash_password, verify_password
 
-executor = PythonExecutor()
+hashed = hash_password("password123")
 
-result = executor.run("""
-print(10+20)
-""")
-
-print(result)
+print(hashed)
+print(verify_password("password123", hashed))
+print(verify_password("wrongpassword", hashed))
