@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useDocumentStore } from "../store/documentStore";
-import FileUpload from "./FileUpload";
+import { useDocumentStore } from "../../store/documentStore";
+import FileUpload from "./UploadSection";
 
 export default function Sidebar() {
     const documents = useDocumentStore(

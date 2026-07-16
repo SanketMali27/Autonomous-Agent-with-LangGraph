@@ -10,7 +10,7 @@ from app.schemas import (
     UserResponse,
     TokenResponse,
 )
-
+from auth.dependencies import get_current_user
 from auth.password import hash_password, verify_password
 from auth.jwt import create_access_token
 
@@ -20,6 +20,14 @@ router = APIRouter(
     tags=["Authentication"],
 )
 
+@router.get(
+    "/me",
+    response_model=UserResponse,
+)
+def get_me(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
 
 @router.post(
     "/signup",
@@ -89,4 +97,5 @@ def login(
     return TokenResponse(
         access_token=access_token,
         token_type="bearer",
+        user=user,
     )

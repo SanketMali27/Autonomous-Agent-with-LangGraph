@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useDocumentStore } from "../store/documentStore";
+import { useDocumentStore } from "../../store/documentStore";
 
 export default function FileUpload() {
     const fileInputRef = useRef<HTMLInputElement>(null);

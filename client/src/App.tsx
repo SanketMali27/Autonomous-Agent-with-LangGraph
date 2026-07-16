@@ -1,14 +1,10 @@
-import Sidebar from "./components/Sidebar";
-import Chat from "./pages/Chat";
+
+import AppRouter from "./router/AppRouter";
 
 function App() {
-  return (
-    <div>
-      <Sidebar />
 
-      <Chat />
-    </div>
-  );
+  return <AppRouter />;
+
 }
 
 export default App;
