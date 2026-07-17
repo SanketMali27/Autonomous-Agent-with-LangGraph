@@ -7,6 +7,7 @@ interface Props {
 export default function UploadSection({
     onUpload,
 }: Props) {
+
     const handleChange = (
         e: ChangeEvent<HTMLInputElement>
     ) => {
@@ -18,17 +19,43 @@ export default function UploadSection({
     };
 
     return (
-        <div className="border-b p-4">
-            <label className="cursor-pointer block rounded-lg border-2 border-dashed p-4 text-center hover:bg-gray-100">
-                Upload PDF
+        <div>
+
+            <label
+                className="
+                flex cursor-pointer flex-col items-center justify-center
+                rounded-2xl
+                border-2 border-dashed border-slate-600
+                bg-slate-800/60
+                p-6
+                text-center
+                transition-all duration-300
+                hover:border-blue-500
+                hover:bg-slate-700/60
+                "
+            >
+
+                <div className="mb-2 text-3xl">
+                    📄
+                </div>
+
+                <p className="font-medium text-white">
+                    Upload PDF
+                </p>
+
+                <p className="mt-1 text-xs text-slate-400">
+                    Click to browse
+                </p>
 
                 <input
+                    hidden
                     type="file"
                     accept=".pdf"
-                    hidden
                     onChange={handleChange}
                 />
+
             </label>
+
         </div>
     );
 }

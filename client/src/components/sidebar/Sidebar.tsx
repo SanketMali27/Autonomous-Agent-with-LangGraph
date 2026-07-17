@@ -30,27 +30,31 @@ export default function Sidebar({
     onLogout,
 }: Props) {
     return (
-        <aside className="flex h-screen w-72 flex-col border-r bg-white">
+        <aside className="relative z-10 flex h-screen w-72 flex-col border-r border-white/10 bg-slate-900/70 backdrop-blur-xl">
 
-            <SidebarHeader
-                onNewChat={onNewChat}
-            />
+            <div className="border-b border-white/10 px-4 py-4">
+                <SidebarHeader onNewChat={onNewChat} />
+            </div>
 
-            <UploadSection
-                onUpload={onUpload}
-            />
+            <div className="border-b border-white/10 px-4 py-4">
+                <UploadSection onUpload={onUpload} />
+            </div>
 
-            <DocumentList
-                documents={documents}
-                selectedDocument={selectedDocument}
-                onSelect={onSelect}
-                onDelete={onDelete}
-            />
+            <div className="flex-1 overflow-y-auto px-2 py-2">
+                <DocumentList
+                    documents={documents}
+                    selectedDocument={selectedDocument}
+                    onSelect={onSelect}
+                    onDelete={onDelete}
+                />
+            </div>
 
-            <SidebarFooter
-                username={username}
-                onLogout={onLogout}
-            />
+            <div className="border-t border-white/10 px-4 py-3">
+                <SidebarFooter
+                    username={username}
+                    onLogout={onLogout}
+                />
+            </div>
 
         </aside>
     );

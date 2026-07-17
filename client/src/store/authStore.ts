@@ -4,13 +4,14 @@ import {
     login as loginApi,
     signup as signupApi,
     getCurrentUser,
+    type User,
 } from "../api/auth.api";
 
 
 
 interface AuthStore {
 
-    user: any | null;
+    user: User | null;
 
     token: string | null;
 
