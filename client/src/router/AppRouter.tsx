@@ -28,20 +28,14 @@ export default function AppRouter() {
                     element={<Signup />}
                 />
 
-                <Route
-                    path="/"
-                    element={
-                        <ProtectedRoute>
-
-                            <DashboardLayout>
-
-                                <Chat />
-
-                            </DashboardLayout>
-
-                        </ProtectedRoute>
-                    }
-                />
+                <Route element={<ProtectedRoute />}>
+                    <Route element={<DashboardLayout />}>
+                        <Route
+                            path="/"
+                            element={<Chat />}
+                        />
+                    </Route>
+                </Route>
 
             </Routes>
 

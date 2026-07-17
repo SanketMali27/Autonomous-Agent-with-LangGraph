@@ -1,68 +1,37 @@
+import ChatHeader from "../components/chat/ChatHeader";
+import ChatInput from "../components/chat/ChatInput";
+import ChatWindow from "../components/chat/ChatWindow";
+
 import { useChatStore } from "../store/chatStore";
-import ChatMessage from "../components/ChatMessage";
-import ChatInput from "../components/ChatInput";
+import { useDocumentStore } from "../store/documentStore";
 
 export default function Chat() {
-    const messages = useChatStore(
-        (state) => state.messages
-    );
+    const {
+        messages,
+        loading,
+        sendMessage,
+    } = useChatStore();
 
-    const loading = useChatStore(
-        (state) => state.loading
-    );
-
-    const error = useChatStore(
-        (state) => state.error
-    );
-
-    const clearChat = useChatStore(
-        (state) => state.clearChat
-    );
+    const {
+        selectedDocument,
+    } = useDocumentStore();
 
     return (
-        <main>
+        <>
+            <ChatHeader
+                documentName={
+                    selectedDocument?.document_name
+                }
+            />
 
-            <header>
-                <h1>Autonomous Research Agent</h1>
+            <ChatWindow
+                messages={messages}
+            />
 
-                <button onClick={clearChat}>
-                    New Chat
-                </button>
-            </header>
-
-
-            <section>
-
-                {messages.length === 0 && (
-                    <p>
-                        Ask a question or select a document
-                        from the sidebar.
-                    </p>
-                )}
-
-
-                {messages.map((message) => (
-                    <ChatMessage
-                        key={message.id}
-                        message={message}
-                    />
-                ))}
-
-
-                {loading && (
-                    <p>Assistant is thinking...</p>
-                )}
-
-
-                {error && (
-                    <p>{error}</p>
-                )}
-
-            </section>
-
-
-            <ChatInput />
-
-        </main>
+            <ChatInput
+                loading={loading}
+                onSend={sendMessage}
+            />
+        </>
     );
 }

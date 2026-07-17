@@ -1,53 +1,34 @@
-import { useRef } from "react";
-import { useDocumentStore } from "../../store/documentStore";
+import type { ChangeEvent } from "react";
 
-export default function FileUpload() {
-    const fileInputRef = useRef<HTMLInputElement>(null);
+interface Props {
+    onUpload: (file: File) => void;
+}
 
-    const uploadDocument = useDocumentStore(
-        (state) => state.uploadDocument
-    );
-
-    const loading = useDocumentStore(
-        (state) => state.loading
-    );
-
-    const handleFileChange = async (
-        event: React.ChangeEvent<HTMLInputElement>
+export default function UploadSection({
+    onUpload,
+}: Props) {
+    const handleChange = (
+        e: ChangeEvent<HTMLInputElement>
     ) => {
-        const file = event.target.files?.[0];
+        const file = e.target.files?.[0];
 
-        if (!file) {
-            return;
+        if (file) {
+            onUpload(file);
         }
-
-        if (file.type !== "application/pdf") {
-            alert("Only PDF files are supported");
-            return;
-        }
-
-        await uploadDocument(file);
-
-        // Allows selecting the same file again later
-        event.target.value = "";
     };
 
     return (
-        <div>
-            <input
-                ref={fileInputRef}
-                type="file"
-                accept="application/pdf"
-                onChange={handleFileChange}
-                hidden
-            />
+        <div className="border-b p-4">
+            <label className="cursor-pointer block rounded-lg border-2 border-dashed p-4 text-center hover:bg-gray-100">
+                Upload PDF
 
-            <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={loading}
-            >
-                {loading ? "Uploading..." : "Upload PDF"}
-            </button>
+                <input
+                    type="file"
+                    accept=".pdf"
+                    hidden
+                    onChange={handleChange}
+                />
+            </label>
         </div>
     );
 }

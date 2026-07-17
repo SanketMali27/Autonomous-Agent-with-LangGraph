@@ -1,81 +1,57 @@
-import { useEffect } from "react";
-import { useDocumentStore } from "../../store/documentStore";
-import FileUpload from "./UploadSection";
+import SidebarHeader from "./SidebarHeader";
+import UploadSection from "./UploadSection";
+import DocumentList from "./DocumentList";
+import SidebarFooter from "./SidebarFooter";
+import type { Document } from "../../api/documents.api";
 
-export default function Sidebar() {
-    const documents = useDocumentStore(
-        (state) => state.documents
-    );
+interface Props {
+    documents: Document[];
 
-    const selectedDocument = useDocumentStore(
-        (state) => state.selectedDocument
-    );
+    selectedDocument: Document | null;
 
-    const loading = useDocumentStore(
-        (state) => state.loading
-    );
+    onSelect: (document: Document) => void;
+    username?: string;
 
-    const error = useDocumentStore(
-        (state) => state.error
-    );
+    onNewChat: () => void;
+    onUpload: (file: File) => void;
 
-    const fetchDocuments = useDocumentStore(
-        (state) => state.fetchDocuments
-    );
+    onDelete: (id: string) => void;
+    onLogout: () => void;
+}
 
-    const selectDocument = useDocumentStore(
-        (state) => state.selectDocument
-    );
-
-    const deleteDocument = useDocumentStore(
-        (state) => state.deleteDocument
-    );
-
-    useEffect(() => {
-        fetchDocuments();
-    }, [fetchDocuments]);
-
+export default function Sidebar({
+    documents,
+    selectedDocument,
+    username,
+    onNewChat,
+    onUpload,
+    onSelect,
+    onDelete,
+    onLogout,
+}: Props) {
     return (
-        <aside>
-            <h2>Documents</h2>
+        <aside className="flex h-screen w-72 flex-col border-r bg-white">
 
-            <FileUpload />
+            <SidebarHeader
+                onNewChat={onNewChat}
+            />
 
-            {error && <p>{error}</p>}
+            <UploadSection
+                onUpload={onUpload}
+            />
 
-            <div>
-                {documents.map((document) => (
-                    <div key={document.document_id}>
+            <DocumentList
+                documents={documents}
+                selectedDocument={selectedDocument}
+                onSelect={onSelect}
+                onDelete={onDelete}
+            />
 
-                        <button
-                            onClick={() =>
-                                selectDocument(document)
-                            }
-                        >
-                            {document.document_name}
-                        </button>
+            <SidebarFooter
+                username={username}
+                onLogout={onLogout}
+            />
 
-                        <button
-                            onClick={() =>
-                                deleteDocument(
-                                    document.document_id
-                                )
-                            }
-                        >
-                            Delete
-                        </button>
-
-                    </div>
-                ))}
-            </div>
-
-            {selectedDocument && (
-                <p>
-                    Selected: {selectedDocument.document_name}
-                </p>
-            )}
-
-            {loading && <p>Processing...</p>}
         </aside>
     );
 }

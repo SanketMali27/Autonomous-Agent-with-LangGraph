@@ -133,6 +133,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             });
             set({
                 loading: false,
+
             });
         } catch {
             set({
