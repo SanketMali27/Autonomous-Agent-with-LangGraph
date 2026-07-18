@@ -11,9 +11,10 @@ import shutil
 from uuid import uuid4
 from fastapi import Depends
 from sqlalchemy.orm import Session
-
+from  auth.dependencies import get_current_user
 from database.db import get_db
-from database.models import Document
+from database.models import Document, User
+from services.document_service import get_user_documents
 
 app = FastAPI(
     title="Autonomous Research & Analytics Agent"
@@ -37,14 +38,14 @@ memory = memory_context.__enter__()
 graph = build_graph(memory)
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest):
-    
+def chat(request: ChatRequest, current_user: User = Depends(get_current_user),):
+   
     config = {
         "configurable": {
             "thread_id": request.thread_id
         }
     }
-    user_id = "user-1"
+    user_id = current_user.id
     result = graph.invoke(
         {  
             "question": request.question,
@@ -114,6 +115,7 @@ ingestor = DocumentIngestor()
 def upload_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
 
     if file.content_type != "application/pdf":
@@ -122,7 +124,7 @@ def upload_document(
             detail="Only PDF files are supported",
         )
 
-    user_id = "user-1"
+    user_id = current_user.id
     document_id = str(uuid4())
 
     file_path = UPLOAD_DIR / f"{document_id}_{file.filename}"
@@ -157,15 +159,9 @@ def upload_document(
 @app.get("/documents")
 def get_documents(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    user_id = "user-1"
-
-    documents = (
-        db.query(Document)
-        .filter(Document.user_id == user_id)
-        .order_by(Document.uploaded_at.desc())
-        .all()
-    )
+    documents=get_user_documents(db,current_user.id)
 
     return {
         "documents": [
@@ -179,8 +175,9 @@ def get_documents(
     }
 
 @app.delete("/documents/{document_id}")
-def delete_document(document_id: str,db: Session = Depends(get_db),):
-    user_id = "user-1"
+def delete_document(document_id: str,db: Session = Depends(get_db),
+                    current_user: User = Depends(get_current_user)):
+    user_id = current_user.id
 
     document = (
         db.query(Document)

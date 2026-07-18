@@ -87,7 +87,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
                 loading: true,
                 error: null,
             });
-
+            console.log("Logging in with email:", email, "and password:", password);
             const response = await loginApi({
                 email,
                 password,

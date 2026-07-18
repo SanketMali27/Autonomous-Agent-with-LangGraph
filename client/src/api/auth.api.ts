@@ -1,5 +1,6 @@
 import api from "./axios";
 
+
 export interface SignupRequest {
     email: string;
     username: string;
@@ -26,25 +27,35 @@ export interface TokenResponse {
 export const signup = async (
     data: SignupRequest
 ) => {
-    const response = await api.post(
-        "/auth/signup",
-        data
-    );
+    try {
+        const response = await api.post(
+            "/auth/signup",
+            data
+        );
 
-    return response.data;
+        return response.data;
+    } catch (error) {
+        console.error("Signup error:", error);
+        throw error;
+    }
 };
 
 export const login = async (
     data: LoginRequest
 ): Promise<TokenResponse> => {
-
-    const response =
-        await api.post<TokenResponse>(
-            "/auth/login",
-            data
-        );
-
-    return response.data;
+    console.log("Sending login request with data:", data);
+    try {
+        const response =
+            await api.post<TokenResponse>(
+                "/auth/login",
+                data
+            );
+        console.log("Login response:", response);
+        return response.data;
+    } catch (error) {
+        console.error("Login error:", error);
+        throw error;
+    }
 };
 
 export const getCurrentUser = async (): Promise<User> => {

@@ -3,8 +3,12 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from database.db import get_db
-from database.models import User
+from database.models import User,Document
 from auth.jwt import verify_access_token
+
+
+
+
 
 
 security = HTTPBearer()
@@ -38,3 +42,19 @@ def get_current_user(
         )
 
     return user
+
+
+
+def get_user_documents(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[Document]:
+
+    documents = (
+        db.query(Document)
+        .filter(Document.user_id == current_user.id)
+        .order_by(Document.uploaded_at.desc())
+        .all()
+    )
+
+    return documents

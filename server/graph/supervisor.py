@@ -6,7 +6,7 @@ from graph.router import rule_based_router
 
 class Route(BaseModel):
     route: str = Field(
-        description="Choose one: rag, web, python"
+        description="Choose one: rag, web, python, natural,meta"
     )
 
 
@@ -29,30 +29,51 @@ def supervisor_node(state: AgentState):
       return state
 
     prompt = f"""
-    You are a router.
-  
-    Choose exactly one route:
+You are a router. Choose exactly one route for the user's question.
 
-    python:
-    Use for calculations, code execution, CSV processing,
-    statistics, and data analysis.
+python:
+Use for calculations, code execution, CSV processing,
+statistics, and data analysis.
 
-    web:
-    Use only when the user explicitly asks for latest,
-    current, recent, news, live, or internet information.
+web:
+Use only when the user explicitly asks for latest,
+current, recent, news, live, or internet information.
 
-    rag:
-    Use for all other knowledge questions because uploaded
-    documents must be searched before falling back to web.
+rag:
+Use for knowledge questions that require searching the
+CONTENT of uploaded documents (e.g. "what does the contract say
+about termination", "summarize chapter 2").
 
-    Question:
-    {state["question"]}
-    """
+meta:
+Use for questions ABOUT the platform/session itself rather than
+document content — e.g. "did I upload any document?",
+"what files do I have?", "what is the status of my upload?",
+"what can you do?", "how do I upload a file?".
+This is NOT a knowledge question and NOT a document-content question.
+
+natural:
+Use for general conversational questions answerable without
+searching documents or the web (e.g. "hii", "who are you?",
+"what is your name?").
+
+Examples:
+"did i uploaded any document" -> meta
+"what documents do i have" -> meta
+"is my file still processing" -> meta
+"summarize the uploaded pdf" -> rag
+"what does section 3 say" -> rag
+"latest news on AI" -> web
+"calculate the average of this csv" -> python
+"hi" -> natural
+
+Question:
+{state["question"]}
+"""
 
     result = router.invoke(prompt)
 
-    print("Route:", result.route)
-
+    print("Route:", repr(result.route))
+  #  print("Route:", result.route)
     state["route"] = result.route
 
     return state

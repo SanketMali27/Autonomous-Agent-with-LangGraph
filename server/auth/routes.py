@@ -93,7 +93,7 @@ def login(
         )
 
     access_token = create_access_token(user.id)
-
+    print("Login user:", user)
     return TokenResponse(
         access_token=access_token,
         token_type="bearer",
