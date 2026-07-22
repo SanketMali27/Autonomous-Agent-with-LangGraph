@@ -6,13 +6,11 @@ import {
 } from "../api/chat.api";
 import { getApiErrorMessage } from "../lib/apiError";
 
-
 export interface Message {
     id: string;
     role: "user" | "assistant";
     content: string;
 }
-
 
 interface ChatStore {
     messages: Message[];
@@ -24,32 +22,24 @@ interface ChatStore {
 
     sendMessage: (
         question: string,
-        documentId?: string | null
+        documentIds?: string[] | null
     ) => Promise<boolean>;
     approve: (approved: boolean) => Promise<boolean>;
 
     clearChat: () => void;
 }
 
-
 export const useChatStore = create<ChatStore>((set, get) => ({
-
     messages: [],
-
     threadId: crypto.randomUUID(),
-
     loading: false,
-
     error: null,
-
     pendingApproval: null,
 
-
     sendMessage: async (
-        question: string,
-        documentId?: string | null
+        question,
+        documentIds?: string[] | null
     ) => {
-
         const userMessage: Message = {
             id: crypto.randomUUID(),
             role: "user",
@@ -65,21 +55,22 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             error: null,
         }));
 
-
         try {
-
             const response: ChatResponse =
-
                 await sendMessageApi({
                     question,
                     thread_id: get().threadId,
-                    document_ids: documentId ? [documentId] : null,
+                    document_ids: documentIds ?? null,
                 });
 
-            if (response.status === "waiting_for_approval") {
+            if (
+                response.status ===
+                "waiting_for_approval"
+            ) {
                 set({
                     loading: false,
-                    pendingApproval: response.interrupt ?? null,
+                    pendingApproval:
+                        response.interrupt ?? null,
                 });
                 return true;
             }
@@ -92,7 +83,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                     "No answer returned.",
             };
 
-
             set((state) => ({
                 messages: [
                     ...state.messages,
@@ -100,24 +90,33 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                 ],
                 loading: false,
             }));
+
             return true;
-
         } catch (error) {
-
             set({
                 loading: false,
-                error: getApiErrorMessage(error, "Failed to send message."),
+                error: getApiErrorMessage(
+                    error,
+                    "Failed to send message."
+                ),
             });
-            return false;
 
+            return false;
         }
     },
 
     approve: async (approved) => {
-        set({ loading: true, error: null });
+        set({
+            loading: true,
+            error: null,
+        });
 
         try {
-            const response = await approveAction(get().threadId, approved);
+            const response = await approveAction(
+                get().threadId,
+                approved
+            );
+
             set((state) => ({
                 messages: response.answer
                     ? [
@@ -129,29 +128,31 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                         },
                     ]
                     : state.messages,
-                pendingApproval: response.interrupt ?? null,
+                pendingApproval:
+                    response.interrupt ?? null,
                 loading: false,
             }));
+
             return true;
         } catch (error) {
             set({
                 loading: false,
-                error: getApiErrorMessage(error, "The approval could not be completed."),
+                error: getApiErrorMessage(
+                    error,
+                    "The approval could not be completed."
+                ),
             });
+
             return false;
         }
     },
 
-
     clearChat: () => {
-
         set({
             messages: [],
             threadId: crypto.randomUUID(),
             error: null,
             pendingApproval: null,
         });
-
     },
-
 }));

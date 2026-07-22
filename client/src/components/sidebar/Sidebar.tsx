@@ -1,16 +1,12 @@
-import SidebarHeader from "./SidebarHeader";
-import UploadSection from "./UploadSection";
+import type { Document } from "../../api/documents.api";
+import DocumentSelector from "../DocumentSelector";
 import DocumentList from "./DocumentList";
 import SidebarFooter from "./SidebarFooter";
-import DocumentSelector from "../DocumentSelector";
-import type { Document } from "../../api/documents.api";
+import SidebarHeader from "./SidebarHeader";
+import UploadSection from "./UploadSection";
 
 interface Props {
     documents: Document[];
-
-    selectedDocument: Document | null;
-
-    onSelect: (document: Document) => void;
     username?: string;
 
     onNewChat: () => void;
@@ -22,14 +18,12 @@ interface Props {
     onSearchAllChange: (searchAll: boolean) => void;
     onToggleDocument: (documentId: string) => void;
     onClearSelection: () => void;
-
     onDelete: (id: string) => void;
     onLogout: () => void;
 }
 
 export default function Sidebar({
     documents,
-    selectedDocument,
     username,
     onNewChat,
     onUpload,
@@ -40,19 +34,21 @@ export default function Sidebar({
     onSearchAllChange,
     onToggleDocument,
     onClearSelection,
-    onSelect,
     onDelete,
     onLogout,
 }: Props) {
     return (
-        <aside className="relative z-10 flex h-screen w-72 flex-col border-r border-white/10 bg-slate-900/70 backdrop-blur-xl">
-
+        <aside className="relative z-10 hidden h-screen w-80 shrink-0 flex-col border-r border-white/10 bg-slate-900/70 backdrop-blur-xl lg:flex">
             <div className="border-b border-white/10 px-4 py-4">
                 <SidebarHeader onNewChat={onNewChat} />
             </div>
 
             <div className="border-b border-white/10 px-4 py-4">
-                <UploadSection onUpload={onUpload} loading={loading} />
+                <UploadSection
+                    onUpload={onUpload}
+                    loading={loading}
+                />
+
                 {error && (
                     <div className="mt-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
                         {error}
@@ -74,8 +70,10 @@ export default function Sidebar({
             <div className="flex-1 overflow-y-auto px-2 py-2">
                 <DocumentList
                     documents={documents}
-                    selectedDocument={selectedDocument}
-                    onSelect={onSelect}
+                    searchAll={searchAll}
+                    selectedDocumentIds={selectedDocumentIds}
+                    onSearchAllChange={onSearchAllChange}
+                    onToggleDocument={onToggleDocument}
                     onDelete={onDelete}
                 />
             </div>
@@ -86,7 +84,6 @@ export default function Sidebar({
                     onLogout={onLogout}
                 />
             </div>
-
         </aside>
     );
 }

@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy import String, DateTime, Column
 from sqlalchemy.orm import Mapped, mapped_column
-
+from sqlalchemy.orm import relationship
 from database.db import Base
 from uuid import uuid4
 
@@ -40,6 +40,12 @@ class User(Base):
         server_default=func.now(),
         nullable=False,
     )
+
+    chat_sessions = relationship(
+    "ChatSession",
+    backref="user",
+    cascade="all, delete-orphan",
+     )
 
 class Document(Base):
 

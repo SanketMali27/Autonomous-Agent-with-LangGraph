@@ -1,4 +1,5 @@
 import type { ChangeEvent } from "react";
+import { FileUp } from "lucide-react";
 
 interface Props {
     onUpload: (file: File) => Promise<void>;
@@ -9,7 +10,6 @@ export default function UploadSection({
     onUpload,
     loading,
 }: Props) {
-
     const handleChange = (
         e: ChangeEvent<HTMLInputElement>
     ) => {
@@ -22,7 +22,6 @@ export default function UploadSection({
 
     return (
         <div>
-
             <label
                 className="
                 flex cursor-pointer flex-col items-center justify-center
@@ -36,13 +35,14 @@ export default function UploadSection({
                 hover:bg-slate-700/60
                 "
             >
-
-                <div className="mb-2 text-3xl">
-                    📄
+                <div className="mb-2 rounded-2xl bg-slate-700/70 p-3 text-slate-200">
+                    <FileUp size={24} />
                 </div>
 
                 <p className="font-medium text-white">
-                    {loading ? "Processing PDF..." : "Upload PDF"}
+                    {loading
+                        ? "Processing PDF..."
+                        : "Upload PDF"}
                 </p>
 
                 <p className="mt-1 text-xs text-slate-400">
@@ -56,9 +56,7 @@ export default function UploadSection({
                     disabled={loading}
                     onChange={handleChange}
                 />
-
             </label>
-
         </div>
     );
 }

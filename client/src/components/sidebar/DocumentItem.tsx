@@ -1,4 +1,8 @@
 import clsx from "clsx";
+import {
+    FileText,
+    Trash2,
+} from "lucide-react";
 
 interface Props {
     name: string;
@@ -23,22 +27,19 @@ export default function DocumentItem({
                     : "border-slate-700 bg-slate-800/60 hover:border-blue-400 hover:bg-slate-700/70 hover:shadow-lg"
             )}
         >
-            {/* Left */}
             <div className="flex min-w-0 items-center gap-3">
-
                 <div
                     className={clsx(
-                        "flex h-10 w-10 items-center justify-center rounded-xl text-lg transition",
+                        "flex h-10 w-10 items-center justify-center rounded-xl transition",
                         selected
                             ? "bg-blue-500 text-white"
                             : "bg-slate-700 text-slate-300 group-hover:bg-blue-500 group-hover:text-white"
                     )}
                 >
-                    📄
+                    <FileText size={18} />
                 </div>
 
                 <div className="min-w-0">
-
                     <p
                         className={clsx(
                             "truncate text-sm font-medium",
@@ -53,36 +54,24 @@ export default function DocumentItem({
                     <p className="text-xs text-slate-400">
                         PDF Document
                     </p>
-
                 </div>
-
             </div>
 
-            {/* Delete Button */}
             <button
+                type="button"
                 onClick={(e) => {
                     e.stopPropagation();
                     onDelete();
                 }}
-                className="
-                    rounded-lg
-                    p-2
-                    text-slate-400
-                    opacity-0
-                    transition-all
-                    duration-300
-                    hover:bg-red-500/20
-                    hover:text-red-400
-                    group-hover:opacity-100
-                "
+                className="rounded-lg p-2 text-slate-400 opacity-0 transition-all duration-300 hover:bg-red-500/20 hover:text-red-400 group-hover:opacity-100"
                 title="Delete document"
+                aria-label={`Delete ${name}`}
             >
-                🗑️
+                <Trash2 size={16} />
             </button>
 
-            {/* Active Indicator */}
             {selected && (
-                <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-blue-500" />
+                <div className="absolute bottom-2 left-0 top-2 w-1 rounded-r-full bg-blue-500" />
             )}
         </div>
     );

@@ -1,6 +1,30 @@
-
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
+from datetime import datetime
+from uuid import UUID
+
+class CreateSessionRequest(BaseModel):
+    title: str
+
+class SessionResponse(BaseModel):
+    session_id: UUID
+    title: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ChatMessageResponse(BaseModel):
+    message_id: UUID
+    role: str
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 
 class SignupRequest(BaseModel):
     email: EmailStr

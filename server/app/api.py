@@ -15,6 +15,7 @@ from  auth.dependencies import get_current_user
 from database.db import get_db
 from database.models import Document, User
 from services.document_service import get_user_documents
+from routers.session_router import router as session_router
 
 app = FastAPI(
     title="Autonomous Research & Analytics Agent"
@@ -37,6 +38,9 @@ memory = memory_context.__enter__()
 
 graph = build_graph(memory)
 
+app.include_router(session_router)
+for route in app.routes:
+    print(route.path, route.methods)
 @app.post("/chat", response_model=ChatResponse)
 def chat(
     request: ChatRequest,
