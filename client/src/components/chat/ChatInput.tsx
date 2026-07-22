@@ -5,26 +5,15 @@ import Button from "../ui/Button";
 
 interface Props {
     loading: boolean;
-    searchAll: boolean;
-    selectedDocumentIds: string[];
     onSend: (message: string) => Promise<boolean>;
 }
 
-export default function ChatInput({
-    loading,
-    searchAll,
-    selectedDocumentIds,
-    onSend,
-}: Props) {
+export default function ChatInput({ loading, onSend }: Props) {
     const [message, setMessage] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const handleSend = async () => {
-        if (
-            !message.trim()
-            || loading
-            || (!searchAll && selectedDocumentIds.length === 0)
-        ) return;
+        if (!message.trim() || loading) return;
         const sent = await onSend(message);
         if (sent) {
             setMessage("");
@@ -54,12 +43,7 @@ export default function ChatInput({
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
                     rows={1}
-                    placeholder={loading
-                        ? "Working..."
-                        : !searchAll && selectedDocumentIds.length === 0
-                            ? "Select at least one document to search"
-                            : "Ask anything about your documents..."}
-                    aria-label="Ask a question"
+                    placeholder={loading ? "Working..." : "Ask anything about your documents..."}
                     disabled={loading}
                     className="max-h-40 flex-1 resize-none bg-transparent px-2 py-2 text-white placeholder:text-slate-400 outline-none"
                 />
@@ -67,11 +51,7 @@ export default function ChatInput({
                 <Button
                     type="button"
                     onClick={handleSend}
-                    disabled={
-                        loading
-                        || !message.trim()
-                        || (!searchAll && selectedDocumentIds.length === 0)
-                    }
+                    disabled={loading || !message.trim()}
                     className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-blue-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                 >
                     {loading ? (

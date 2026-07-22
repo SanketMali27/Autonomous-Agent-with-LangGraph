@@ -11,33 +11,64 @@ import { getApiErrorMessage } from "../lib/apiError";
 
 interface DocumentStore {
     documents: Document[];
-    selectedDocument: Document | null;
+
     searchAll: boolean;
+
     selectedDocumentIds: string[];
 
+    setDocuments: (docs: Document[]) => void;
+
+    setSearchAll: (value: boolean) => void;
+
+    toggleDocument: (id: string) => void;
     loading: boolean;
     error: string | null;
 
     fetchDocuments: () => Promise<void>;
     uploadDocument: (file: File) => Promise<void>;
     deleteDocument: (documentId: string) => Promise<void>;
-    selectDocument: (document: Document | null) => void;
-    setSearchAll: (searchAll: boolean) => void;
-    toggleDocument: (documentId: string) => void;
+
+    selectAllDocuments: () => void;
     clearSelection: () => void;
 }
 
 
 export const useDocumentStore = create<DocumentStore>((set) => ({
 
+
     documents: [],
-    selectedDocument: null,
+
     searchAll: true,
+
     selectedDocumentIds: [],
+
 
     loading: false,
     error: null,
 
+    setDocuments: (docs) =>
+        set({
+            documents: docs,
+        }),
+
+    setSearchAll: (value) =>
+        set((state) => ({
+            searchAll: value,
+            selectedDocumentIds: value
+                ? []
+                : state.selectedDocumentIds,
+        })),
+
+    toggleDocument: (id) =>
+        set((state) => {
+            const exists = state.selectedDocumentIds.includes(id);
+
+            return {
+                selectedDocumentIds: exists
+                    ? state.selectedDocumentIds.filter((x) => x !== id)
+                    : [...state.selectedDocumentIds, id],
+            };
+        }),
 
     fetchDocuments: async () => {
         try {
@@ -48,13 +79,10 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
             const documents = await getDocuments();
 
-            set((state) => ({
+            set({
                 documents,
-                selectedDocumentIds: state.selectedDocumentIds.filter((id) =>
-                    documents.some((document) => document.document_id === id)
-                ),
                 loading: false,
-            }));
+            });
 
         } catch (error) {
             set({
@@ -76,13 +104,10 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
             const documents = await getDocuments();
 
-            set((state) => ({
+            set({
                 documents,
-                selectedDocumentIds: state.selectedDocumentIds.filter((id) =>
-                    documents.some((document) => document.document_id === id)
-                ),
                 loading: false,
-            }));
+            });
 
         } catch (error) {
             set({
@@ -108,11 +133,6 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
                         document.document_id !== documentId
                 ),
 
-                selectedDocument:
-                    state.selectedDocument?.document_id === documentId
-                        ? null
-                        : state.selectedDocument,
-
                 selectedDocumentIds: state.selectedDocumentIds.filter(
                     (id) => id !== documentId
                 ),
@@ -122,34 +142,26 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
         } catch (error) {
             set({
-                error: getApiErrorMessage(error, "Failed to delete document."),
+                error: getApiErrorMessage(
+                    error,
+                    "Failed to delete document."
+                ),
                 loading: false,
             });
         }
     },
 
-
-    selectDocument: (document) => {
+    clearSelection: () => {
         set({
-            selectedDocument: document,
+            selectedDocumentIds: [],
         });
     },
-
-    setSearchAll: (searchAll) => {
-        set({ searchAll });
-    },
-
-    toggleDocument: (documentId) => {
+    selectAllDocuments: () => {
         set((state) => ({
-            searchAll: false,
-            selectedDocumentIds: state.selectedDocumentIds.includes(documentId)
-                ? state.selectedDocumentIds.filter((id) => id !== documentId)
-                : [...state.selectedDocumentIds, documentId],
+            selectedDocumentIds: state.documents.map(
+                (doc) => doc.document_id
+            ),
         }));
-    },
-
-    clearSelection: () => {
-        set({ selectedDocumentIds: [] });
     },
 
 }));

@@ -5,7 +5,6 @@ import {
     type ChatResponse,
 } from "../api/chat.api";
 import { getApiErrorMessage } from "../lib/apiError";
-import { useDocumentStore } from "./documentStore";
 
 
 export interface Message {
@@ -25,6 +24,7 @@ interface ChatStore {
 
     sendMessage: (
         question: string,
+        documentId?: string | null
     ) => Promise<boolean>;
     approve: (approved: boolean) => Promise<boolean>;
 
@@ -47,6 +47,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     sendMessage: async (
         question: string,
+        documentId?: string | null
     ) => {
 
         const userMessage: Message = {
@@ -66,16 +67,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
 
         try {
-            const {
-                searchAll,
-                selectedDocumentIds,
-            } = useDocumentStore.getState();
 
             const response: ChatResponse =
+
                 await sendMessageApi({
                     question,
                     thread_id: get().threadId,
-                    document_ids: searchAll ? null : selectedDocumentIds,
+                    document_ids: documentId ? [documentId] : null,
                 });
 
             if (response.status === "waiting_for_approval") {
