@@ -6,11 +6,14 @@ import {
     deleteDocument as deleteDocumentApi,
     type Document,
 } from "../api/documents.api";
+import { getApiErrorMessage } from "../lib/apiError";
 
 
 interface DocumentStore {
     documents: Document[];
     selectedDocument: Document | null;
+    searchAll: boolean;
+    selectedDocumentIds: string[];
 
     loading: boolean;
     error: string | null;
@@ -19,6 +22,9 @@ interface DocumentStore {
     uploadDocument: (file: File) => Promise<void>;
     deleteDocument: (documentId: string) => Promise<void>;
     selectDocument: (document: Document | null) => void;
+    setSearchAll: (searchAll: boolean) => void;
+    toggleDocument: (documentId: string) => void;
+    clearSelection: () => void;
 }
 
 
@@ -26,6 +32,8 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
     documents: [],
     selectedDocument: null,
+    searchAll: true,
+    selectedDocumentIds: [],
 
     loading: false,
     error: null,
@@ -40,14 +48,17 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
             const documents = await getDocuments();
 
-            set({
+            set((state) => ({
                 documents,
+                selectedDocumentIds: state.selectedDocumentIds.filter((id) =>
+                    documents.some((document) => document.document_id === id)
+                ),
                 loading: false,
-            });
+            }));
 
-        } catch {
+        } catch (error) {
             set({
-                error: "Failed to fetch documents",
+                error: getApiErrorMessage(error, "Failed to load documents."),
                 loading: false,
             });
         }
@@ -65,14 +76,17 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
             const documents = await getDocuments();
 
-            set({
+            set((state) => ({
                 documents,
+                selectedDocumentIds: state.selectedDocumentIds.filter((id) =>
+                    documents.some((document) => document.document_id === id)
+                ),
                 loading: false,
-            });
+            }));
 
-        } catch {
+        } catch (error) {
             set({
-                error: "Failed to upload document",
+                error: getApiErrorMessage(error, "Failed to upload document."),
                 loading: false,
             });
         }
@@ -99,12 +113,16 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
                         ? null
                         : state.selectedDocument,
 
+                selectedDocumentIds: state.selectedDocumentIds.filter(
+                    (id) => id !== documentId
+                ),
+
                 loading: false,
             }));
 
-        } catch {
+        } catch (error) {
             set({
-                error: "Failed to delete document",
+                error: getApiErrorMessage(error, "Failed to delete document."),
                 loading: false,
             });
         }
@@ -115,6 +133,23 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         set({
             selectedDocument: document,
         });
+    },
+
+    setSearchAll: (searchAll) => {
+        set({ searchAll });
+    },
+
+    toggleDocument: (documentId) => {
+        set((state) => ({
+            searchAll: false,
+            selectedDocumentIds: state.selectedDocumentIds.includes(documentId)
+                ? state.selectedDocumentIds.filter((id) => id !== documentId)
+                : [...state.selectedDocumentIds, documentId],
+        }));
+    },
+
+    clearSelection: () => {
+        set({ selectedDocumentIds: [] });
     },
 
 }));

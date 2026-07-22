@@ -27,35 +27,15 @@ export interface TokenResponse {
 export const signup = async (
     data: SignupRequest
 ) => {
-    try {
-        const response = await api.post(
-            "/auth/signup",
-            data
-        );
-
-        return response.data;
-    } catch (error) {
-        console.error("Signup error:", error);
-        throw error;
-    }
+    const response = await api.post<User>("/auth/signup", data);
+    return response.data;
 };
 
 export const login = async (
     data: LoginRequest
 ): Promise<TokenResponse> => {
-    console.log("Sending login request with data:", data);
-    try {
-        const response =
-            await api.post<TokenResponse>(
-                "/auth/login",
-                data
-            );
-        console.log("Login response:", response);
-        return response.data;
-    } catch (error) {
-        console.error("Login error:", error);
-        throw error;
-    }
+    const response = await api.post<TokenResponse>("/auth/login", data);
+    return response.data;
 };
 
 export const getCurrentUser = async (): Promise<User> => {

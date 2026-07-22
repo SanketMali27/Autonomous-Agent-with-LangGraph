@@ -38,47 +38,51 @@ memory = memory_context.__enter__()
 graph = build_graph(memory)
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest, current_user: User = Depends(get_current_user),):
-   
-    config = {
-        "configurable": {
-            "thread_id": request.thread_id
+def chat(
+    request: ChatRequest,
+    current_user: User = Depends(get_current_user),
+):
+  
+        config = {
+            "configurable": {
+                "thread_id": request.thread_id
+            }
         }
-    }
-    user_id = current_user.id
-    result = graph.invoke(
-        {  
-            "question": request.question,
-            "route": "",
-            "retrieved_docs": [],
-            "answer": "",
-            "messages": [
-                HumanMessage(content=request.question)
-            ],
-            "retry_count": 0,
-            "retrieval_score": "",
-            "rewritten_query": "",
-            "critic_score": "",
-            "approved": False,
-             "user_id": user_id,
-             "document_id": request.document_id,
-        },
-        config=config,
-    )
 
-    if "__interrupt__" in result:
+        result = graph.invoke(
+            {
+                "question": request.question,
+                "route": "",
+                "retrieved_docs": [],
+                "answer": "",
+                "messages": [
+                    HumanMessage(content=request.question)
+                ],
+                "retry_count": 0,
+                "retrieval_score": "",
+                "rewritten_query": "",
+                "critic_score": "",
+                "approved": False,
+                "user_id": current_user.id,
+                "document_ids": request.document_ids,   
+            },
+            config=config,
+        )
 
-        interrupt_data = result["__interrupt__"][0].value
+        if "__interrupt__" in result:
+            interrupt_data = result["__interrupt__"][0].value
+
+            return ChatResponse(
+                status="waiting_for_approval",
+                answer=result.get("answer"),
+                interrupt=interrupt_data,
+            )
 
         return ChatResponse(
-            status="waiting_for_approval",
+            status="completed",
             answer=result.get("answer"),
-            interrupt=interrupt_data,
         )
-    return ChatResponse(
-        status="completed",
-        answer=result.get("answer"),
-    )
+  
 
 
 

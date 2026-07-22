@@ -1,6 +1,6 @@
 
-from pydantic import BaseModel, EmailStr, Field
-
+from pydantic import BaseModel, EmailStr, Field, field_validator
+from typing import Optional
 
 class SignupRequest(BaseModel):
     email: EmailStr
@@ -29,9 +29,16 @@ class TokenResponse(BaseModel):
     user: UserResponse
 
 class ChatRequest(BaseModel):
-    question: str
-    thread_id: str
-    document_id: str | None = None
+    question: str = Field(min_length=1, max_length=4000)
+    thread_id: str = Field(min_length=1, max_length=200)
+    document_ids: Optional[list[str]] = None
+
+    @field_validator("question")
+    @classmethod
+    def question_must_contain_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Question cannot be empty")
+        return value.strip()
 
 
 class ChatResponse(BaseModel):
@@ -41,4 +48,4 @@ class ChatResponse(BaseModel):
 
 class ApprovalRequest(BaseModel):
     thread_id: str
-    approved: bool    
+    approved: bool

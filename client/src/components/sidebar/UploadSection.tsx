@@ -1,11 +1,13 @@
 import type { ChangeEvent } from "react";
 
 interface Props {
-    onUpload: (file: File) => void;
+    onUpload: (file: File) => Promise<void>;
+    loading: boolean;
 }
 
 export default function UploadSection({
     onUpload,
+    loading,
 }: Props) {
 
     const handleChange = (
@@ -13,8 +15,8 @@ export default function UploadSection({
     ) => {
         const file = e.target.files?.[0];
 
-        if (file) {
-            onUpload(file);
+        if (file && !loading) {
+            void onUpload(file);
         }
     };
 
@@ -40,7 +42,7 @@ export default function UploadSection({
                 </div>
 
                 <p className="font-medium text-white">
-                    Upload PDF
+                    {loading ? "Processing PDF..." : "Upload PDF"}
                 </p>
 
                 <p className="mt-1 text-xs text-slate-400">
@@ -51,6 +53,7 @@ export default function UploadSection({
                     hidden
                     type="file"
                     accept=".pdf"
+                    disabled={loading}
                     onChange={handleChange}
                 />
 

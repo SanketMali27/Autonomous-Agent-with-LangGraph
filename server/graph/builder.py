@@ -60,7 +60,7 @@ def build_graph(memory=None):
     "critic_node",
     lambda state: state["critic_score"],
     {
-        "supported": "human_review_node",
+        "supported": END,
         "unsupported": "rewrite_node",
     }
     )

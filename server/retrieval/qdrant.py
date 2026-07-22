@@ -1,7 +1,15 @@
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, Filter,FieldCondition,MatchValue
+from qdrant_client.models import (
+    Distance,
+    VectorParams,
+    Filter,
+    FieldCondition,
+    MatchValue,
+    MatchAny,
+    FilterSelector,
+)
+
 from app.config import QDRANT_URL
-from qdrant_client.models import (Filter,FieldCondition,MatchValue,FilterSelector,)
 
 
 class QdrantManager:
@@ -9,8 +17,11 @@ class QdrantManager:
     def __init__(self):
         self.client = QdrantClient(url=QDRANT_URL)
 
-    def create_collection( self, collection_name: str, vector_size: int,):
-
+    def create_collection(
+        self,
+        collection_name: str,
+        vector_size: int,
+    ):
         collections = self.client.get_collections().collections
 
         existing = [c.name for c in collections]
@@ -26,20 +37,24 @@ class QdrantManager:
             ),
         )
 
-    def upsert(self, collection_name: str, points: list):
-       self.client.upsert(
-        collection_name=collection_name,
-        points=points,
-       )
+    def upsert(
+        self,
+        collection_name: str,
+        points: list,
+    ):
+        self.client.upsert(
+            collection_name=collection_name,
+            points=points,
+        )
 
     def search(
         self,
         collection_name: str,
         query_vector: list[float],
         user_id: str,
-        document_id: str | None = None,
+        document_ids: list[str] | None = None,
         limit: int = 5,
-        ):
+    ):
 
         conditions = [
             FieldCondition(
@@ -48,11 +63,12 @@ class QdrantManager:
             )
         ]
 
-        if document_id is not None:
+        # Search only selected documents
+        if document_ids:
             conditions.append(
                 FieldCondition(
                     key="document_id",
-                    match=MatchValue(value=document_id),
+                    match=MatchAny(any=document_ids),
                 )
             )
 
@@ -64,25 +80,30 @@ class QdrantManager:
             query_filter=query_filter,
             limit=limit,
         ).points
-   
-    def delete_document(self,collection_name: str,user_id: str,document_id: str,):
+
+    def delete_document(
+        self,
+        collection_name: str,
+        user_id: str,
+        document_id: str,
+    ):
         query_filter = Filter(
-          must=[
-            FieldCondition(
-                key="user_id",
-                match=MatchValue(value=user_id),
-            ),
-            FieldCondition(
-                key="document_id",
-                match=MatchValue(value=document_id),
-            ),
-          ]
+            must=[
+                FieldCondition(
+                    key="user_id",
+                    match=MatchValue(value=user_id),
+                ),
+                FieldCondition(
+                    key="document_id",
+                    match=MatchValue(value=document_id),
+                ),
+            ]
         )
 
         self.client.delete(
-          collection_name=collection_name,
-          points_selector=FilterSelector(
-             filter=query_filter,
-         ),
-        wait=True,
-       )
+            collection_name=collection_name,
+            points_selector=FilterSelector(
+                filter=query_filter,
+            ),
+            wait=True,
+        )

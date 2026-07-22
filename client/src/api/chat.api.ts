@@ -3,7 +3,7 @@ import api from "./axios";
 export interface ChatRequest {
     question: string;
     thread_id: string;
-    document_id?: string | null;
+    document_ids?: string[] | null;
 }
 
 export interface ChatResponse {
@@ -18,13 +18,14 @@ export interface ChatResponse {
 
 export interface ApprovalResponse {
     status: string;
-    approved: boolean;
     answer: string | null;
+    interrupt?: ChatResponse["interrupt"];
 }
 
 export const sendMessage = async (
     data: ChatRequest
 ): Promise<ChatResponse> => {
+
     const response = await api.post<ChatResponse>("/chat", data);
     return response.data;
 };

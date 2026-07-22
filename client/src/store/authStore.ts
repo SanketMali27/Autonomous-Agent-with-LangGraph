@@ -6,6 +6,7 @@ import {
     getCurrentUser,
     type User,
 } from "../api/auth.api";
+import { getApiErrorMessage } from "../lib/apiError";
 
 
 
@@ -87,7 +88,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
                 loading: true,
                 error: null,
             });
-            console.log("Logging in with email:", email, "and password:", password);
             const response = await loginApi({
                 email,
                 password,
@@ -105,11 +105,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
                 loading: false,
             });
 
-        } catch {
+        } catch (error) {
 
             set({
                 loading: false,
-                error: "Invalid email or password",
+                error: getApiErrorMessage(error, "Login failed. Please check your credentials."),
             });
 
         }
@@ -136,10 +136,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
                 loading: false,
 
             });
-        } catch {
+        } catch (error) {
             set({
                 loading: false,
-                error: "Signup failed",
+                error: getApiErrorMessage(error, "Signup failed. Please try again."),
             });
         }
     },

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from database.db import get_db
 from database.models import User
@@ -56,8 +57,15 @@ def signup(
         hashed_password=hash_password(request.password),
     )
 
-    db.add(user)
-    db.commit()
+    try:
+        db.add(user)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email already registered",
+        )
     db.refresh(user)
 
     return user
@@ -93,7 +101,6 @@ def login(
         )
 
     access_token = create_access_token(user.id)
-    print("Login user:", user)
     return TokenResponse(
         access_token=access_token,
         token_type="bearer",

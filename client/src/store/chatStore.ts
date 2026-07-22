@@ -1,8 +1,11 @@
 import { create } from "zustand";
 import {
     sendMessage as sendMessageApi,
+    approveAction,
     type ChatResponse,
 } from "../api/chat.api";
+import { getApiErrorMessage } from "../lib/apiError";
+import { useDocumentStore } from "./documentStore";
 
 
 export interface Message {
@@ -18,11 +21,12 @@ interface ChatStore {
 
     loading: boolean;
     error: string | null;
+    pendingApproval: ChatResponse["interrupt"];
 
     sendMessage: (
         question: string,
-        documentId?: string | null
-    ) => Promise<void>;
+    ) => Promise<boolean>;
+    approve: (approved: boolean) => Promise<boolean>;
 
     clearChat: () => void;
 }
@@ -38,10 +42,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     error: null,
 
+    pendingApproval: null,
+
 
     sendMessage: async (
         question: string,
-        documentId?: string | null
     ) => {
 
         const userMessage: Message = {
@@ -61,14 +66,25 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
 
         try {
+            const {
+                searchAll,
+                selectedDocumentIds,
+            } = useDocumentStore.getState();
 
             const response: ChatResponse =
                 await sendMessageApi({
                     question,
                     thread_id: get().threadId,
-                    document_id: documentId,
+                    document_ids: searchAll ? null : selectedDocumentIds,
                 });
 
+            if (response.status === "waiting_for_approval") {
+                set({
+                    loading: false,
+                    pendingApproval: response.interrupt ?? null,
+                });
+                return true;
+            }
 
             const assistantMessage: Message = {
                 id: crypto.randomUUID(),
@@ -86,14 +102,45 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                 ],
                 loading: false,
             }));
+            return true;
 
-        } catch {
+        } catch (error) {
 
             set({
                 loading: false,
-                error: "Failed to send message",
+                error: getApiErrorMessage(error, "Failed to send message."),
             });
+            return false;
 
+        }
+    },
+
+    approve: async (approved) => {
+        set({ loading: true, error: null });
+
+        try {
+            const response = await approveAction(get().threadId, approved);
+            set((state) => ({
+                messages: response.answer
+                    ? [
+                        ...state.messages,
+                        {
+                            id: crypto.randomUUID(),
+                            role: "assistant" as const,
+                            content: response.answer,
+                        },
+                    ]
+                    : state.messages,
+                pendingApproval: response.interrupt ?? null,
+                loading: false,
+            }));
+            return true;
+        } catch (error) {
+            set({
+                loading: false,
+                error: getApiErrorMessage(error, "The approval could not be completed."),
+            });
+            return false;
         }
     },
 
@@ -104,6 +151,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             messages: [],
             threadId: crypto.randomUUID(),
             error: null,
+            pendingApproval: null,
         });
 
     },

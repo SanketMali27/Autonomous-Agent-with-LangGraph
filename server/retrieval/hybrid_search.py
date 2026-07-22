@@ -15,7 +15,7 @@ class HybridSearcher:
     query: str,
     limit: int = 5,
     user_id: str = None,
-    document_id:str | None = None):
+    document_ids: list[str] | None = None):
 
         query_vector = self.embedding.embed([query])[0]
 
@@ -24,7 +24,7 @@ class HybridSearcher:
             query_vector=query_vector,
             limit=limit,
             user_id=user_id,
-            document_id=document_id,
+            document_ids=document_ids,
 
         )
 

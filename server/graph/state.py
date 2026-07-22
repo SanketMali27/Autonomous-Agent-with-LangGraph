@@ -16,4 +16,4 @@ class AgentState(TypedDict):
     approved: bool
     document_name: str
     user_id: str
-    document_id: str | None
+    document_ids: list[str] | None
