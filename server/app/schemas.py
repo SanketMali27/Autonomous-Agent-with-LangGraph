@@ -54,7 +54,8 @@ class TokenResponse(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=4000)
-    thread_id: str = Field(min_length=1, max_length=200)
+    session_id: UUID
+
     document_ids: Optional[list[str]] = None
 
     @field_validator("question")

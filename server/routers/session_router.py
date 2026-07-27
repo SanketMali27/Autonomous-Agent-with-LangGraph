@@ -32,7 +32,7 @@ def create_session(
     service = ChatService(ChatRepository(db))
 
     return service.create_session(
-        user_id=current_user.user_id,
+        user_id=current_user.id,
         title=request.title,
     )
 
@@ -46,7 +46,7 @@ def get_sessions(
     service = ChatService(ChatRepository(db))
 
     return service.get_user_sessions(
-        current_user.user_id
+        current_user.id
     )
 
 #Get Session Messages
@@ -63,7 +63,8 @@ def get_session_messages(
     service = ChatService(ChatRepository(db))
 
     return service.get_session_messages(
-        session_id
+        session_id=session_id,
+        user_id=current_user.id,
     )
 
 
@@ -77,7 +78,8 @@ def delete_session(
 
     service = ChatService(ChatRepository(db))
 
-    service.delete_session(session_id)
+    service.delete_session(   session_id=session_id,
+                            user_id=current_user.id,)
 
     return {
         "message": "Chat session deleted."

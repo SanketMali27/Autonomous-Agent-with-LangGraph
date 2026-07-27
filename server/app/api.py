@@ -8,6 +8,7 @@ from langgraph.types import Command
 from langchain_core.messages import HumanMessage
 from pathlib import Path
 import shutil
+from database.db import get_db
 from uuid import uuid4
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -16,6 +17,9 @@ from database.db import get_db
 from database.models import Document, User
 from services.document_service import get_user_documents
 from routers.session_router import router as session_router
+from repositories.chat_repository import ChatRepository
+from services.chat_service import ChatService
+
 
 app = FastAPI(
     title="Autonomous Research & Analytics Agent"
@@ -39,53 +43,94 @@ memory = memory_context.__enter__()
 graph = build_graph(memory)
 
 app.include_router(session_router)
-for route in app.routes:
-    print(route.path, route.methods)
+
+
+
+
+
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
+ingestor = DocumentIngestor()
+
+
 @app.post("/chat", response_model=ChatResponse)
 def chat(
     request: ChatRequest,
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+):        
+        chat_service = ChatService(ChatRepository(db))
+        session = chat_service.get_session(
+                session_id=request.session_id,
+                user_id=current_user.id,
+            )
+
+        if session is None:
+          raise HTTPException(
+          status_code=404,
+          detail="Session not found",
+           )
   
         config = {
             "configurable": {
-                "thread_id": request.thread_id
+                "thread_id": str(request.session_id)
             }
         }
+        chat_service.save_message(
+           session_id=request.session_id,
+           role="user",
+           user_id=current_user.id,
+           content=request.question,)
+        
+        try:
+                result = graph.invoke(
+                    {
+                        "question": request.question,
+                        "route": "",
+                        "retrieved_docs": [],
+                        "answer": "",
+                        "messages": [
+                            HumanMessage(content=request.question)
+                        ],
+                        "retry_count": 0,
+                        "retrieval_score": "",
+                        "rewritten_query": "",
+                        "critic_score": "",
+                        "approved": False,
+                        "user_id": current_user.id,
+                        "document_ids": request.document_ids,   
+                    },
+                    config=config,
+                )
 
-        result = graph.invoke(
-            {
-                "question": request.question,
-                "route": "",
-                "retrieved_docs": [],
-                "answer": "",
-                "messages": [
-                    HumanMessage(content=request.question)
-                ],
-                "retry_count": 0,
-                "retrieval_score": "",
-                "rewritten_query": "",
-                "critic_score": "",
-                "approved": False,
-                "user_id": current_user.id,
-                "document_ids": request.document_ids,   
-            },
-            config=config,
-        )
+                
 
-        if "__interrupt__" in result:
-            interrupt_data = result["__interrupt__"][0].value
+                if "__interrupt__" in result:
+                    interrupt_data = result["__interrupt__"][0].value
 
-            return ChatResponse(
-                status="waiting_for_approval",
-                answer=result.get("answer"),
-                interrupt=interrupt_data,
-            )
+                    return ChatResponse(
+                        status="waiting_for_approval",
+                        answer=result.get("answer"),
+                        interrupt=interrupt_data,
+                    )
 
-        return ChatResponse(
-            status="completed",
-            answer=result.get("answer"),
-        )
+                chat_service.save_message(
+                                session_id=request.session_id,
+                                role="assistant",
+                                user_id=current_user.id,
+                                content=result.get("answer", "")
+                                )
+                
+                return ChatResponse(
+                    status="completed",
+                    answer=result.get("answer"),
+                )
+            
+   
+        except Exception:
+          db.rollback()
+          raise
   
 
 
@@ -109,15 +154,6 @@ def approve(request: ApprovalRequest):
         "approved": request.approved,
         "answer": result.get("answer"),
     }
-
-
-
-
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
-
-ingestor = DocumentIngestor()
-
 
 @app.post("/upload")
 def upload_document(

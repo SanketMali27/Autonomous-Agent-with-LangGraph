@@ -1,5 +1,13 @@
-from langgraph.checkpoint.sqlite import SqliteSaver
+from contextlib import contextmanager
+
+from langgraph.checkpoint.postgres import PostgresSaver
+
+from app.config import DATABASE_URL
 
 
-def create_memory(db_path: str = "checkpoints.db"):
-    return SqliteSaver.from_conn_string(db_path)
+@contextmanager
+def create_memory():
+
+    with PostgresSaver.from_conn_string(DATABASE_URL) as memory:
+        memory.setup()
+        yield memory

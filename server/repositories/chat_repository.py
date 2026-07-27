@@ -31,15 +31,18 @@ class ChatRepository:
         self.db.refresh(session)
 
         return session
-
+    
     def get_session(
         self,
         session_id: UUID,
+        user_id: UUID
     ) -> ChatSession | None:
 
         return (
             self.db.query(ChatSession)
-            .filter(ChatSession.session_id == session_id)
+            .filter(ChatSession.session_id == session_id,
+                    ChatSession.user_id == user_id,
+               )
             .first()
         )
 
@@ -65,8 +68,24 @@ class ChatRepository:
 
     def delete_session(
         self,
-        session: ChatSession,
+        session_id: UUID,
+        user_id: UUID,
     ) -> None:
+
+        session = (
+            self.db.query(ChatSession)
+            .filter(
+                ChatSession.session_id == session_id,
+                ChatSession.user_id == user_id,
+            )
+            .first()
+        )
+
+        if session is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Session not found",
+            )
 
         self.db.delete(session)
         self.db.commit()
@@ -95,13 +114,31 @@ class ChatRepository:
         return message
 
     def get_session_messages(
-        self,
-        session_id: UUID,
-    ) -> list[ChatMessage]:
+      self,
+      session_id: UUID,
+      user_id: UUID,
+):
 
-        return (
-            self.db.query(ChatMessage)
-            .filter(ChatMessage.session_id == session_id)
-            .order_by(ChatMessage.created_at.asc())
-            .all()
+      session = (
+        self.db.query(ChatSession)
+        .filter(
+            ChatSession.session_id == session_id,
+            ChatSession.user_id == user_id,
         )
+        .first()
+         )
+
+      if session is None:
+         raise HTTPException(
+            status_code=404,
+            detail="Session not found",
+        )
+
+      return (
+          self.db.query(ChatMessage)
+            .filter(
+            ChatMessage.session_id == session_id
+           )
+          .order_by(ChatMessage.created_at.asc())
+          .all()
+         )
