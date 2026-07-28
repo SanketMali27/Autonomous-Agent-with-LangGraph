@@ -19,12 +19,16 @@ class ChatRepository:
         self,
         user_id: UUID,
         title: str,
+        session_id: UUID | None = None,
     ) -> ChatSession:
 
         session = ChatSession(
             user_id=user_id,
             title=title,
         )
+
+        if session_id is not None:
+            session.session_id = session_id
 
         self.db.add(session)
         self.db.commit()

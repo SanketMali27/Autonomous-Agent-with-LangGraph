@@ -2,7 +2,8 @@ import api from "./axios";
 
 export interface ChatRequest {
     question: string;
-    thread_id: string;
+    thread_id?: string;
+    session_id?: string | null;
     document_ids?: string[] | null;
 }
 

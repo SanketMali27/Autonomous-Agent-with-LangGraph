@@ -4,7 +4,7 @@ import type { Session } from "../api/session.api";
 
 interface SessionStore {
     sessions: Session[];
-    currentSessionId: string | null;
+    currentSessionId: string;
 
     setSessions: (sessions: Session[]) => void;
     setCurrentSession: (id: string) => void;
@@ -15,7 +15,7 @@ interface SessionStore {
 
 export const useSessionStore = create<SessionStore>((set) => ({
     sessions: [],
-    currentSessionId: null,
+    currentSessionId: "",
 
     setSessions: (sessions) => set({ sessions }),
 

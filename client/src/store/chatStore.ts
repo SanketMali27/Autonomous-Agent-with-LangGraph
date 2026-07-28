@@ -14,7 +14,11 @@ export interface Message {
 
 interface ChatStore {
     messages: Message[];
-    threadId: string;
+    sessionId: string | null;
+
+    setSessionId: (id: string) => void;
+
+    setMessages: (messages: Message[]) => void;
 
     loading: boolean;
     error: string | null;
@@ -31,11 +35,20 @@ interface ChatStore {
 
 export const useChatStore = create<ChatStore>((set, get) => ({
     messages: [],
-    threadId: crypto.randomUUID(),
+    sessionId: null,
     loading: false,
     error: null,
     pendingApproval: null,
 
+    setSessionId: (id) =>
+        set({
+            sessionId: id,
+        }),
+
+    setMessages: (messages) =>
+        set({
+            messages,
+        }),
     sendMessage: async (
         question,
         documentIds?: string[] | null
@@ -59,7 +72,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             const response: ChatResponse =
                 await sendMessageApi({
                     question,
-                    thread_id: get().threadId,
+                    session_id: get().sessionId!,
                     document_ids: documentIds ?? null,
                 });
 
@@ -113,7 +126,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
         try {
             const response = await approveAction(
-                get().threadId,
+                get().sessionId!,
                 approved
             );
 
@@ -150,7 +163,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     clearChat: () => {
         set({
             messages: [],
-            threadId: crypto.randomUUID(),
+            sessionId: null,
             error: null,
             pendingApproval: null,
         });

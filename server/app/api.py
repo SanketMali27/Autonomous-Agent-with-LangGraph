@@ -61,24 +61,33 @@ def chat(
     current_user: User = Depends(get_current_user),
 ):        
         chat_service = ChatService(ChatRepository(db))
+        requested_session_id = request.session_id
+
         session = chat_service.get_session(
-                session_id=request.session_id,
+                session_id=requested_session_id,
                 user_id=current_user.id,
             )
 
+        if session is None and requested_session_id is not None:
+            session = chat_service.create_session(
+                user_id=current_user.id,
+                title="New Chat",
+                session_id=requested_session_id,
+            )
+
         if session is None:
-          raise HTTPException(
-          status_code=404,
-          detail="Session not found",
-           )
+            session = chat_service.create_session(
+                user_id=current_user.id,
+                title="New Chat",
+            )
   
         config = {
             "configurable": {
-                "thread_id": str(request.session_id)
+                "thread_id": str(session.session_id)
             }
         }
         chat_service.save_message(
-           session_id=request.session_id,
+           session_id=session.session_id,
            role="user",
            user_id=current_user.id,
            content=request.question,)
@@ -116,7 +125,7 @@ def chat(
                     )
 
                 chat_service.save_message(
-                                session_id=request.session_id,
+                                session_id=session.session_id,
                                 role="assistant",
                                 user_id=current_user.id,
                                 content=result.get("answer", "")

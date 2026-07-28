@@ -12,10 +12,12 @@ class ChatService:
         self,
         user_id: UUID,
         title: str,
+        session_id: UUID | None = None,
     ):
         return self.repository.create_session(
             user_id=user_id,
             title=title,
+            session_id=session_id,
         )
     def get_session(
         self,

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
@@ -54,9 +54,25 @@ class TokenResponse(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=4000)
-    session_id: UUID
+    session_id: UUID | None = None
+    thread_id: str | None = None
 
     document_ids: Optional[list[str]] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def resolve_session_id(cls, values):
+        if isinstance(values, dict):
+            session_id = values.get("session_id")
+            thread_id = values.get("thread_id")
+
+            if session_id is None and thread_id:
+                try:
+                    values["session_id"] = UUID(thread_id)
+                except ValueError:
+                    values["session_id"] = None
+
+        return values
 
     @field_validator("question")
     @classmethod

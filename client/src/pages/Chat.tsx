@@ -4,6 +4,14 @@ import ChatInput from "../components/chat/ChatInput";
 import ChatWindow from "../components/chat/ChatWindow";
 import { useChatStore } from "../store/chatStore";
 import { useDocumentStore } from "../store/documentStore";
+import {
+    getSessions,
+    createSession,
+    deleteSession,
+    getSessionMessages,
+} from "../api/session.api";
+import { useEffect } from "react";
+import { useSessionStore } from "../store/sessionStore";
 
 export default function Chat() {
     const {
@@ -13,7 +21,45 @@ export default function Chat() {
         pendingApproval,
         sendMessage,
         approve,
+        setMessages,
+        setSessionId,
+
     } = useChatStore();
+
+    const {
+        currentSessionId,
+        setSessions,
+
+    } = useSessionStore();
+
+    useEffect(() => {
+        async function load() {
+            const data = await getSessions();
+            setSessions(data);
+        }
+
+        load();
+    }, []);
+
+    useEffect(() => {
+        if (!currentSessionId) return;
+
+        async function loadMessages() {
+            const msgs = await getSessionMessages(currentSessionId);
+
+            setSessionId(currentSessionId);
+
+            setMessages(
+                msgs.map((m) => ({
+                    id: m.message_id,
+                    role: m.role,
+                    content: m.content,
+                }))
+            );
+        }
+
+        loadMessages();
+    }, [currentSessionId]);
 
     const {
         documents,
