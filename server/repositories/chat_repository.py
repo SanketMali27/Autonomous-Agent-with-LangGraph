@@ -146,3 +146,91 @@ class ChatRepository:
           .order_by(ChatMessage.created_at.asc())
           .all()
          )
+    
+    def update_session_title(
+    self,
+    session,
+    title: str,
+):
+        session.title = title
+        self.db.commit()
+        self.db.refresh(session)
+
+        return session
+
+    def get_summary(
+    self,
+    session_id: UUID,
+    user_id: UUID,
+) -> str:
+
+        session = self.get_session(
+            session_id=session_id,
+            user_id=user_id,
+        )
+
+        if session is None:
+            raise ValueError("Session not found.")
+
+        return session.summary or ""
+
+
+    def update_summary(
+        self,
+        session_id: UUID,
+        user_id: UUID,
+        summary: str,
+    ):
+
+        session = self.get_session(
+            session_id=session_id,
+            user_id=user_id,
+        )
+
+        if session is None:
+            raise ValueError("Session not found.")
+
+        session.summary = summary
+
+        self.db.commit()
+
+        self.db.refresh(session)
+
+        return session
+
+
+    def get_recent_messages(
+        self,
+        session_id: UUID,
+        user_id: UUID,
+        limit: int = 6,
+    ):
+
+        session = self.get_session(
+            session_id=session_id,
+            user_id=user_id,
+        )
+
+        if session is None:
+            raise ValueError("Session not found.")
+
+        messages = (
+            self.db.query(ChatMessage)
+            .filter(ChatMessage.session_id == session_id)
+            .order_by(ChatMessage.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        return list(reversed(messages))
+
+    
+    def get_message_count(
+    self,
+    session_id,
+):
+        return (
+            self.db.query(ChatMessage)
+            .filter(ChatMessage.session_id == session_id)
+            .count()
+        )

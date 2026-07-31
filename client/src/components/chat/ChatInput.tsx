@@ -5,6 +5,13 @@ import type {
 import { useRef, useState } from "react";
 import { SendHorizontal } from "lucide-react";
 import Button from "../ui/Button";
+import {
+
+    getSessions,
+
+
+} from "../../api/session.api";
+import { useSessionStore } from "../../store/sessionStore";
 
 interface Props {
     loading: boolean;
@@ -29,7 +36,9 @@ export default function ChatInput({
     const canSend =
         searchAll ||
         selectedDocumentIds.length > 0;
-
+    const {
+        setSessions,
+    } = useSessionStore();
     const handleSend = async () => {
         if (!message.trim() || loading || !canSend) {
             return;
@@ -42,6 +51,8 @@ export default function ChatInput({
 
         if (sent) {
             setMessage("");
+            const sessions = await getSessions();
+            setSessions(sessions);
 
             if (textareaRef.current) {
                 textareaRef.current.style.height =

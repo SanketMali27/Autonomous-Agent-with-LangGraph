@@ -8,7 +8,7 @@ class AgentState(TypedDict):
     retrieved_docs: list
     answer: str
     messages: Annotated[list, add_messages]
-
+    
     retrieval_score: str
     retry_count: int
     rewritten_query: str

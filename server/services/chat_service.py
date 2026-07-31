@@ -1,4 +1,5 @@
 from uuid import UUID
+from services.chat_summary import generate_summary
 
 from repositories.chat_repository import ChatRepository
 
@@ -83,3 +84,104 @@ class ChatService:
 
         self.repository.delete_session( session_id=session_id,
         user_id=user_id,)
+
+    def update_session_title(
+    self,
+    session_id: UUID,
+    user_id: UUID,
+    title: str,
+    ):
+        session = self.repository.get_session(
+            session_id=session_id,
+            user_id=user_id,
+        )
+
+        if session is None:
+            raise ValueError("Chat session not found.")
+
+        return self.repository.update_session_title(
+            session,
+            title,
+        )    
+
+    def get_summary(
+    self,
+    session_id: UUID,
+    user_id: UUID,
+):
+        return self.repository.get_summary(
+            session_id,
+            user_id,
+        )
+
+
+    def update_summary(
+        self,
+        session_id: UUID,
+        user_id: UUID,
+        summary: str,
+    ):
+        return self.repository.update_summary(
+            session_id,
+            user_id,
+            summary,
+        )
+
+
+    def get_recent_messages(
+        self,
+        session_id: UUID,
+        user_id: UUID,
+        limit: int = 6,
+    ):
+        return self.repository.get_recent_messages(
+            session_id,
+            user_id,
+            limit,
+        )
+
+
+
+    def refresh_summary(
+        self,
+        session_id,
+        user_id,
+    ):
+        summary = self.get_summary(
+            session_id,
+            user_id,
+        )
+
+        messages = self.get_recent_messages(
+            session_id,
+            user_id,
+            limit=20,
+        )
+
+        new_summary = generate_summary(
+            summary,
+            messages,
+        )
+
+        self.update_summary(
+            session_id,
+            user_id,
+            new_summary,
+        )
+
+    def maybe_refresh_summary(
+        self,
+        session_id: UUID,
+        user_id: UUID,
+    ):
+        count = self.repository.get_message_count(
+            session_id
+        )
+
+        if count % 10 != 0:
+            return
+
+        self.refresh_summary(
+            session_id,
+            user_id,
+        )

@@ -1,5 +1,5 @@
 from uuid import uuid4
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, String,Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -31,6 +31,7 @@ class ChatSession(Base):
         DateTime(timezone=True),
         server_default=func.now(),
     )
+    summary = Column(Text, nullable=True,default="")
 
     updated_at = Column(
         DateTime(timezone=True),

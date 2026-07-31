@@ -1,3 +1,4 @@
+from services.prompt_builder import build_messages
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI,UploadFile, File, HTTPException
 from retrieval.ingest import DocumentIngestor
@@ -5,7 +6,7 @@ from graph.builder import build_graph
 from memory.checkpoint import create_memory
 from app.schemas import ChatRequest, ChatResponse ,ApprovalRequest
 from langgraph.types import Command
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage,AIMessage
 from pathlib import Path
 import shutil
 from database.db import get_db
@@ -63,6 +64,7 @@ def chat(
         chat_service = ChatService(ChatRepository(db))
         requested_session_id = request.session_id
 
+       
         session = chat_service.get_session(
                 session_id=requested_session_id,
                 user_id=current_user.id,
@@ -75,12 +77,38 @@ def chat(
                 session_id=requested_session_id,
             )
 
+
         if session is None:
             session = chat_service.create_session(
                 user_id=current_user.id,
                 title="New Chat",
             )
-  
+
+        if session.title == "New Chat":
+            chat_service.update_session_title(
+                session_id=session.session_id,
+                user_id=current_user.id,
+                title=request.question[:50],
+            )
+
+        summary = chat_service.get_summary(
+            session.session_id,
+            current_user.id,
+        )
+
+        recent_messages = chat_service.get_recent_messages(
+            session.session_id,
+            current_user.id,
+        )
+
+        messages = build_messages(
+            summary=summary,
+            recent_messages=recent_messages,
+            current_question=request.question,
+        )
+            
+
+             
         config = {
             "configurable": {
                 "thread_id": str(session.session_id)
@@ -99,9 +127,7 @@ def chat(
                         "route": "",
                         "retrieved_docs": [],
                         "answer": "",
-                        "messages": [
-                            HumanMessage(content=request.question)
-                        ],
+                        "messages":messages,
                         "retry_count": 0,
                         "retrieval_score": "",
                         "rewritten_query": "",
@@ -123,14 +149,18 @@ def chat(
                         answer=result.get("answer"),
                         interrupt=interrupt_data,
                     )
-
+              
                 chat_service.save_message(
                                 session_id=session.session_id,
                                 role="assistant",
                                 user_id=current_user.id,
                                 content=result.get("answer", "")
                                 )
-                
+
+                chat_service.maybe_refresh_summary(
+                        session.session_id,
+                        current_user.id,
+                    )
                 return ChatResponse(
                     status="completed",
                     answer=result.get("answer"),
