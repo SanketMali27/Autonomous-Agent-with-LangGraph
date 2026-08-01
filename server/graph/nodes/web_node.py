@@ -1,6 +1,7 @@
 from app.llm import llm
 from graph.state import AgentState
 from tools.web_tool import web_search
+from services.prompt_builder import WEB_PROMPT
 
 
 def web_node(state: AgentState):
@@ -11,14 +12,10 @@ def web_node(state: AgentState):
         d["content"] for d in docs
     )
 
-    prompt = f"""
-Use only this information.
-
-Context:
-{context}
-Question:
-{state["question"]}
-"""
+    prompt = WEB_PROMPT.format(
+        context=context,
+        question=state["question"],
+    )
 
     response = llm.invoke(prompt)
 

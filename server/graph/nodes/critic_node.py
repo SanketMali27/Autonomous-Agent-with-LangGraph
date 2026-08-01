@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 from app.llm import llm
 from graph.state import AgentState
+from services.prompt_builder import CRITIC_PROMPT
 
 
 class CriticResult(BaseModel):
@@ -19,25 +20,11 @@ def critic_node(state: AgentState):
         doc["text"] for doc in state["retrieved_docs"]
     )
 
-    prompt = f"""
-You are a fact checker.
-
-Question:
-{state["question"]}
-
-Retrieved Context:
-{context}
-
-Answer:
-{state["answer"]}
-
-Is every important claim in the answer supported by the retrieved context?
-
-Return:
-supported
-or
-unsupported
-"""
+    prompt = CRITIC_PROMPT.format(
+        question=state["question"],
+        context=context,
+        answer=state["answer"],
+    )
 
     result = critic.invoke(prompt)
 

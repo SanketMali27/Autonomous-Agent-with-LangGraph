@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 from app.llm import llm
 from graph.state import AgentState
+from services.prompt_builder import GRADER_PROMPT
 
 
 class RetrievalGrade(BaseModel):
@@ -25,20 +26,10 @@ def grader_node(state: AgentState):
         doc["text"] for doc in state["retrieved_docs"]
     )
    
-    prompt = f"""
-You are evaluating retrieved documents.
-
-Question:
-{state["question"]}
-
-Retrieved Context:
-{context}
-
-If the retrieved context is sufficient to answer the question,
-return "relevant".
-
-Otherwise return "irrelevant".
-"""
+    prompt = GRADER_PROMPT.format(
+        question=state["question"],
+        context=context,
+    )
 
     result = grader.invoke(prompt)
 

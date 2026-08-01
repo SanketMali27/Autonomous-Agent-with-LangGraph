@@ -2,7 +2,9 @@ import axios from "axios";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
-    timeout: 30000,
+    // LLM-backed requests can legitimately take longer than a normal CRUD
+    // request. Individual callers can still override this when needed.
+    timeout: 120000,
     headers: {
         "Content-Type": "application/json",
     },

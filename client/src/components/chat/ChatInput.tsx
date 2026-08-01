@@ -51,8 +51,13 @@ export default function ChatInput({
 
         if (sent) {
             setMessage("");
-            const sessions = await getSessions();
-            setSessions(sessions);
+            try {
+                const sessions = await getSessions();
+                setSessions(sessions);
+            } catch {
+                // The chat response already succeeded; keep the optimistic
+                // sidebar order if refreshing the list temporarily fails.
+            }
 
             if (textareaRef.current) {
                 textareaRef.current.style.height =

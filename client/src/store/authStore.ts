@@ -31,7 +31,7 @@ interface AuthStore {
         username: string,
         password: string
     ) => Promise<void>;
-
+    fetchCurrentUser: () => Promise<void>;
     logout: () => void;
 
     isAuthenticated: () => boolean;
@@ -75,6 +75,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
         }
 
+    },
+
+    fetchCurrentUser: async () => {
+        try {
+            const user = await getCurrentUser();
+            set({ user });
+        } catch {
+            localStorage.removeItem("token");
+            set({ token: null, user: null });
+        }
     },
 
     login: async (

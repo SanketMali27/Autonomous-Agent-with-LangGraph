@@ -3,6 +3,7 @@ import { Bot } from "lucide-react";
 import ChatMessage from "./ChatMessage";
 
 interface Message {
+    id: string;
     role: "user" | "assistant";
     content: string;
 }
@@ -26,7 +27,7 @@ export default function ChatWindow({
 
     if (messages.length === 0) {
         return (
-            <div className="flex h-full flex-col items-center justify-center bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 px-6">
+            <div className="flex h-full flex-col items-center justify-center overflow-y-auto bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 px-6 py-10">
                 <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-2xl">
                     <Bot
                         size={46}
@@ -48,7 +49,7 @@ export default function ChatWindow({
                 </p>
 
                 <div className="mt-10 grid w-full max-w-3xl gap-4 md:grid-cols-2">
-                    <div className="rounded-2xl border border-slate-700 bg-slate-800/70 p-5">
+                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/70 p-5 transition hover:-translate-y-0.5 hover:border-blue-500/50">
                         <h3 className="mb-2 font-semibold text-white">
                             Upload PDFs
                         </h3>
@@ -59,7 +60,7 @@ export default function ChatWindow({
                         </p>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-700 bg-slate-800/70 p-5">
+                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/70 p-5 transition hover:-translate-y-0.5 hover:border-blue-500/50">
                         <h3 className="mb-2 font-semibold text-white">
                             Ask questions
                         </h3>
@@ -74,11 +75,11 @@ export default function ChatWindow({
     }
 
     return (
-        <div className="h-full overflow-y-auto bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-            <div className="mx-auto flex max-w-5xl flex-col gap-2 px-6 py-8">
-                {messages.map((message, index) => (
+        <div className="h-full overflow-y-auto scroll-smooth bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+            <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-6 md:px-6 md:py-8">
+                {messages.map((message) => (
                     <ChatMessage
-                        key={index}
+                        key={message.id}
                         role={message.role}
                         content={message.content}
                     />

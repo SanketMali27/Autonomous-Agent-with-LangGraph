@@ -36,6 +36,7 @@ async def http_exception_handler(
         404: "NOT_FOUND",
         409: "CONFLICT",
         422: "VALIDATION_ERROR",
+        503: "SERVICE_UNAVAILABLE",
     }.get(exc.status_code, "REQUEST_ERROR")
     return JSONResponse(
         status_code=exc.status_code,
@@ -65,9 +66,9 @@ async def unhandled_exception_handler(
 ) -> JSONResponse:
     del request, exc
     return JSONResponse(
-        status_code=500,
+        status_code=503,
         content=error_payload(
-            "Something went wrong on the server. Please try again.",
-            "INTERNAL_SERVER_ERROR",
+            "The server could not complete the request. Please try again.",
+            "SERVICE_UNAVAILABLE",
         ),
     )

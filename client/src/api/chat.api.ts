@@ -10,6 +10,7 @@ export interface ChatRequest {
 export interface ChatResponse {
     answer: string | null;
     status: "completed" | "waiting_for_approval";
+    session_id?: string | null;
     interrupt?: {
         question: string;
         answer: string;
@@ -20,6 +21,7 @@ export interface ChatResponse {
 export interface ApprovalResponse {
     status: string;
     answer: string | null;
+    session_id?: string | null;
     interrupt?: ChatResponse["interrupt"];
 }
 

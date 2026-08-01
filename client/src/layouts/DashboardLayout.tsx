@@ -7,7 +7,7 @@ import { useChatStore } from "../store/chatStore";
 import { useDocumentStore } from "../store/documentStore";
 
 export default function DashboardLayout() {
-    const { user, logout } = useAuthStore();
+    const { logout, fetchCurrentUser, user } = useAuthStore();
 
     const {
         documents,
@@ -27,7 +27,8 @@ export default function DashboardLayout() {
 
     useEffect(() => {
         void fetchDocuments();
-    }, [fetchDocuments]);
+        void fetchCurrentUser();
+    }, [fetchDocuments, fetchCurrentUser]);
 
     return (
         <div className="relative flex h-screen overflow-hidden bg-slate-950">
@@ -53,7 +54,7 @@ export default function DashboardLayout() {
                 onLogout={logout}
             />
 
-            <main className="relative z-10 flex flex-1 flex-col overflow-y-auto p-3 md:p-4">
+            <main className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden p-3 md:p-4">
                 <Outlet />
             </main>
         </div>

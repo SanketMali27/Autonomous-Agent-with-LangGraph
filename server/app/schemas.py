@@ -85,8 +85,9 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str | None = None
     status: str
+    session_id: UUID | None = None
     interrupt: dict | None = None
 
 class ApprovalRequest(BaseModel):
-    thread_id: str
+    thread_id: UUID
     approved: bool

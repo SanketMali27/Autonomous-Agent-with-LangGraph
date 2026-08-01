@@ -1,4 +1,6 @@
 from uuid import UUID
+from datetime import datetime, timezone
+from fastapi import HTTPException
 
 from sqlalchemy.orm import Session
 
@@ -66,7 +68,7 @@ class ChatRepository:
         self,
         session: ChatSession,
     ) -> None:
-
+        session.updated_at = datetime.now(timezone.utc)
         self.db.add(session)
         self.db.commit()
 
@@ -153,6 +155,7 @@ class ChatRepository:
     title: str,
 ):
         session.title = title
+        session.updated_at = datetime.now(timezone.utc)
         self.db.commit()
         self.db.refresh(session)
 
@@ -170,7 +173,7 @@ class ChatRepository:
         )
 
         if session is None:
-            raise ValueError("Session not found.")
+            raise HTTPException(status_code=404, detail="Session not found")
 
         return session.summary or ""
 
@@ -188,7 +191,7 @@ class ChatRepository:
         )
 
         if session is None:
-            raise ValueError("Session not found.")
+            raise HTTPException(status_code=404, detail="Session not found")
 
         session.summary = summary
 
@@ -212,7 +215,7 @@ class ChatRepository:
         )
 
         if session is None:
-            raise ValueError("Session not found.")
+            raise HTTPException(status_code=404, detail="Session not found")
 
         messages = (
             self.db.query(ChatMessage)

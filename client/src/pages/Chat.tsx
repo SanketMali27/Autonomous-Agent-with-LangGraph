@@ -4,14 +4,14 @@ import ChatInput from "../components/chat/ChatInput";
 import ChatWindow from "../components/chat/ChatWindow";
 import { useChatStore } from "../store/chatStore";
 import { useDocumentStore } from "../store/documentStore";
+import DocumentSelector from "../components/DocumentSelector";
 import {
     getSessions,
-    createSession,
-    deleteSession,
     getSessionMessages,
 } from "../api/session.api";
 import { useEffect } from "react";
 import { useSessionStore } from "../store/sessionStore";
+import { getApiErrorMessage } from "../lib/apiError";
 
 export default function Chat() {
     const {
@@ -23,48 +23,57 @@ export default function Chat() {
         approve,
         setMessages,
         setSessionId,
+        setError,
 
     } = useChatStore();
 
     const {
         currentSessionId,
         setSessions,
+        setError: setSessionError,
 
     } = useSessionStore();
 
     useEffect(() => {
         async function load() {
-            const data = await getSessions();
-            setSessions(data);
+            try {
+                const data = await getSessions();
+                setSessions(data);
+            } catch (error) {
+                setSessionError(getApiErrorMessage(error, "Unable to load conversations."));
+            }
         }
 
         load();
-    }, []);
+    }, [setSessions, setSessionError]);
 
     useEffect(() => {
         if (!currentSessionId) return;
 
         async function loadMessages() {
-            const msgs = await getSessionMessages(currentSessionId);
-
-            setSessionId(currentSessionId);
-
-            setMessages(
-                msgs.map((m) => ({
+            try {
+                const msgs = await getSessionMessages(currentSessionId);
+                setSessionId(currentSessionId);
+                setMessages(msgs.map((m) => ({
                     id: m.message_id,
                     role: m.role,
                     content: m.content,
-                }))
-            );
+                })));
+            } catch (error) {
+                setError(getApiErrorMessage(error, "Unable to load this conversation."));
+            }
         }
 
-        loadMessages();
-    }, [currentSessionId]);
+        void loadMessages();
+    }, [currentSessionId, setError, setMessages, setSessionId]);
 
     const {
         documents,
         searchAll,
         selectedDocumentIds,
+        setSearchAll,
+        toggleDocument,
+        clearSelection,
     } = useDocumentStore();
 
     const selectedDocuments = documents.filter(
@@ -89,8 +98,8 @@ export default function Chat() {
             : `${selectedDocuments.length} selected`;
 
     return (
-        <div className="flex h-full flex-col overflow-hidden rounded-3xl bg-slate-900">
-            <div className="border-b border-slate-700 bg-slate-900/80 px-6 py-3 backdrop-blur-xl">
+        <div className="relative flex min-h-0 h-full flex-col overflow-hidden rounded-3xl border border-white/5 bg-slate-900 shadow-2xl shadow-black/20">
+            <div className="shrink-0 border-b border-slate-700/80 bg-slate-900/85 px-5 py-4 backdrop-blur-xl md:px-6">
                 <ChatHeader
                     scopeLabel={scopeLabel}
                     hasActiveScope={
@@ -100,7 +109,7 @@ export default function Chat() {
                 />
             </div>
 
-            <div className="flex-1 overflow-hidden">
+            <div className="min-h-0 flex-1 overflow-hidden">
                 <ChatWindow
                     messages={messages}
                     loading={loading}
@@ -121,7 +130,17 @@ export default function Chat() {
                 </div>
             )}
 
-            <div className="border-t border-slate-700 bg-slate-900/90 p-4 backdrop-blur-xl">
+            <div className="sticky bottom-0 z-10 shrink-0 border-t border-slate-700/80 bg-slate-900/90 p-3 backdrop-blur-xl md:p-4">
+                <div className="mb-3 lg:hidden">
+                    <DocumentSelector
+                        documents={documents}
+                        searchAll={searchAll}
+                        selectedDocumentIds={selectedDocumentIds}
+                        onSearchAllChange={setSearchAll}
+                        onToggleDocument={toggleDocument}
+                        onClearSelection={clearSelection}
+                    />
+                </div>
                 <div className="mx-auto mb-3 flex max-w-5xl items-center gap-2 text-xs text-slate-400">
                     <span
                         aria-hidden="true"

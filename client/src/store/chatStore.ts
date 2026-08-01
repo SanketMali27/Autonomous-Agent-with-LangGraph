@@ -5,6 +5,7 @@ import {
     type ChatResponse,
 } from "../api/chat.api";
 import { getApiErrorMessage } from "../lib/apiError";
+import { useSessionStore } from "./sessionStore";
 
 export interface Message {
     id: string;
@@ -19,6 +20,7 @@ interface ChatStore {
     setSessionId: (id: string) => void;
 
     setMessages: (messages: Message[]) => void;
+    setError: (error: string | null) => void;
 
     loading: boolean;
     error: string | null;
@@ -49,6 +51,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         set({
             messages,
         }),
+    setError: (error) => set({ error }),
     sendMessage: async (
         question,
         documentIds?: string[] | null
@@ -75,6 +78,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                     session_id: get().sessionId!,
                     document_ids: documentIds ?? null,
                 });
+
+            if (response.session_id) {
+                set({ sessionId: response.session_id });
+                useSessionStore.getState().touchSession(
+                    response.session_id,
+                    question,
+                );
+            }
 
             if (
                 response.status ===
@@ -130,6 +141,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                 approved
             );
 
+            if (response.session_id) {
+                set({ sessionId: response.session_id });
+                useSessionStore.getState().touchSession(
+                    response.session_id,
+                );
+            }
+
             set((state) => ({
                 messages: response.answer
                     ? [
@@ -161,6 +179,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     },
 
     clearChat: () => {
+        useSessionStore.getState().setCurrentSession("");
         set({
             messages: [],
             sessionId: null,

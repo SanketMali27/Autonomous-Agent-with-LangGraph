@@ -17,8 +17,8 @@ class PythonExecutor:
                 "output": output.getvalue(),
             }
 
-        except Exception as e:
+        except BaseException as e:
             return {
                 "success": False,
-                "output": str(e),
+                "output": f"{type(e).__name__}: {e}",
             }

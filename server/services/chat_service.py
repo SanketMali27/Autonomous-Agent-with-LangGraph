@@ -1,4 +1,5 @@
 from uuid import UUID
+from fastapi import HTTPException
 from services.chat_summary import generate_summary
 
 from repositories.chat_repository import ChatRepository
@@ -59,7 +60,7 @@ class ChatService:
                     user_id=user_id,)
 
         if session is None:
-            raise ValueError("Chat session not found.")
+            raise HTTPException(status_code=404, detail="Chat session not found.")
 
         message = self.repository.save_message(
             session_id=session_id,
@@ -80,7 +81,7 @@ class ChatService:
                                               user_id=user_id)
 
         if session is None:
-            raise ValueError("Chat session not found.")
+            raise HTTPException(status_code=404, detail="Chat session not found.")
 
         self.repository.delete_session( session_id=session_id,
         user_id=user_id,)
@@ -97,7 +98,7 @@ class ChatService:
         )
 
         if session is None:
-            raise ValueError("Chat session not found.")
+            raise HTTPException(status_code=404, detail="Chat session not found.")
 
         return self.repository.update_session_title(
             session,

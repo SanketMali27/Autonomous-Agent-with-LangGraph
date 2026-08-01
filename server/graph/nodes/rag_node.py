@@ -1,6 +1,7 @@
 from app.llm import llm
 from graph.state import AgentState
 from retrieval.hybrid_search import HybridSearcher
+from services.prompt_builder import RAG_PROMPT
 
 searcher = HybridSearcher()
 
@@ -29,16 +30,11 @@ def rag_node(state: AgentState):
 
     
 
-    prompt = f"""
-     Answer using only the provided context.
-
-      Context:
-      {context}
-
-      Question:
-      {state["question"]}
-      """
-
+    prompt = RAG_PROMPT.format(
+        context=context,
+        question=state["question"],
+    )
+    print("Prompt for RAG answer generation:", prompt)  # Debugging line
     response = llm.invoke(prompt)
  
 

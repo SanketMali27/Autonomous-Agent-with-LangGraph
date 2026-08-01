@@ -35,6 +35,9 @@ export const getApiErrorMessage = (
     }
 
     if (!error.response) {
+        if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+            return "The assistant is taking longer than expected. Please try again.";
+        }
         return "Unable to reach the server. Check your connection and try again.";
     }
 
