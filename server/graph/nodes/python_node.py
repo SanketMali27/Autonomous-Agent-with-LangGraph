@@ -2,8 +2,11 @@ from app.llm import llm
 from graph.state import AgentState
 from tools.python_tool import PythonExecutor
 from services.prompt_builder import PYTHON_PROMPT
+from langsmith import traceable
+
 
 executor = PythonExecutor()
+
 
 
 def python_node(state: AgentState):

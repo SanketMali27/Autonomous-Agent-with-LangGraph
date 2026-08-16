@@ -4,7 +4,6 @@ from app.llm import llm
 from graph.state import AgentState
 from services.prompt_builder import NATURAL_PROMPT
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -13,6 +12,7 @@ def answer_node(state: AgentState):
         conversation=state.get("messages", []),
         question=state["question"],
     )
+
     print("Prompt for answer generation:", prompt)  # Debugging line
     try:
         result = llm.invoke(prompt)

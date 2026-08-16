@@ -10,8 +10,9 @@ from qdrant_client.models import (
 )
 
 from app.config import QDRANT_URL
+from langsmith import traceable
 
-
+@traceable(name="qdrant_manager", run_type="tool")
 class QdrantManager:
 
     def __init__(self):

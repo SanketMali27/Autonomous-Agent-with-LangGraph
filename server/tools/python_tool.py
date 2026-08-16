@@ -1,7 +1,12 @@
 import io
 from contextlib import redirect_stdout
+from langsmith import traceable
 
-
+@traceable(
+    name="python_executor",
+    run_type="tool",
+    tags=["python"],
+)
 class PythonExecutor:
 
     def run(self, code: str):

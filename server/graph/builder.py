@@ -46,7 +46,20 @@ def build_graph(memory=None):
     
     graph.add_edge("meta_node",END)
     graph.add_edge("answer_node", END)
-    graph.add_edge("rag_node", "grader_node")
+   
+    graph.add_conditional_edges(
+    "rag_node",
+    lambda state: (
+        "document"
+        if state.get("document_level_request")
+        else "normal"
+    ),
+    {
+        "document": "critic_node",
+        "normal": "grader_node",
+    },
+   )
+    
     graph.add_conditional_edges(
     "grader_node",
     lambda state: state["retrieval_score"],

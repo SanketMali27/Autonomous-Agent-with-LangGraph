@@ -18,13 +18,11 @@ def supervisor_node(state: AgentState):
         state["route"] = "rag"
         return state
 
-    route = rule_based_router(state["question"])
-    if route:
-        state["route"] = route
-        return state
+   ###  state["route"] = route
+      #  return state
 
     prompt = ROUTER_PROMPT.format(
-        conversation=state.get("messages", []),
+        conversation=state.get("summary", ""),
         question=state["question"],
     )
 

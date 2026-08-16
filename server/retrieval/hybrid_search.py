@@ -1,8 +1,12 @@
 from retrieval.embeddings import EmbeddingModel
 from retrieval.qdrant import QdrantManager
 from app.config import COLLECTION_NAME 
+from langsmith import traceable
 
-
+@traceable(name="hybrid_search",
+    run_type="retriever",
+    tags=["rag", "retrieval"],
+    description="Hybrid search using embeddings and Qdrant")
 class HybridSearcher:
 
 

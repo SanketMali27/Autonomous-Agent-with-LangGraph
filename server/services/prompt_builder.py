@@ -17,7 +17,7 @@ natural: greetings, explanations, project or resume discussion, programming conc
 
 Use the latest request as the primary signal. Return only the structured route.
 
-Conversation:
+Conversation Summary:
 {conversation}
 
 Latest request:
@@ -114,20 +114,29 @@ def build_messages(
     recent_messages: list[ChatMessage],
     current_question: str,
 ):
-    messages = [SystemMessage(content=SYSTEM_PROMPT)]
+    messages = [
+        SystemMessage(content=SYSTEM_PROMPT)
+    ]
 
     if summary.strip():
         messages.append(
-            SystemMessage(content=f"Conversation summary:\n{summary}")
+            SystemMessage(
+                content=f"Conversation Summary:\n{summary}"
+            )
         )
 
     for msg in recent_messages:
-        messages.append(
-            HumanMessage(content=msg.content)
-            if msg.role == "user"
-            else AIMessage(content=msg.content)
-        )
+        if msg.role == "user":
+            messages.append(
+                HumanMessage(content=msg.content)
+            )
+        else:
+            messages.append(
+                AIMessage(content=msg.content)
+            )
 
-    messages.append(HumanMessage(content=current_question))
+    messages.append(
+        HumanMessage(content=current_question)
+    )
 
     return messages

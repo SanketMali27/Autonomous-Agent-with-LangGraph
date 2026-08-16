@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from langgraph.types import Command
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi import Request as FastAPIRequest
 
 from app.errors import (
     http_exception_handler,
@@ -27,13 +28,23 @@ from routers.session_router import router as session_router
 from services.chat_service import ChatService
 from services.document_service import get_user_documents
 from services.prompt_builder import build_messages
+from contextlib import asynccontextmanager
 
 
 logger = logging.getLogger(__name__)
 MAX_UPLOAD_SIZE = 25 * 1024 * 1024
 
-app = FastAPI(title="Autonomous Research & Analytics Agent")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    with create_memory() as memory:
+        app.state.graph = build_graph(memory)
+        yield
 
+
+app = FastAPI(
+    title="Autonomous Research & Analytics Agent",
+    lifespan=lifespan,
+)
 
 @app.exception_handler(StarletteHTTPException)
 async def handle_http_exception(
@@ -75,9 +86,7 @@ app.add_middleware(
 
 # Keep one checkpointer alive for the lifetime of the process. This is
 # required for approval/resume calls to use the same graph state.
-memory_context = create_memory()
-memory = memory_context.__enter__()
-graph = build_graph(memory)
+
 ingestor = DocumentIngestor()
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -96,6 +105,7 @@ def _answer_text(value: object) -> str:
 @app.post("/chat", response_model=ChatResponse)
 def chat(
     request: ChatRequest,
+    http_request: FastAPIRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -133,26 +143,35 @@ def chat(
             session.session_id,
             current_user.id,
         )
+        
         messages = build_messages(
             summary=summary,
             recent_messages=recent_messages,
             current_question=request.question,
         )
 
-        chat_service.save_message(
-            session_id=session.session_id,
-            role="user",
-            user_id=current_user.id,
-            content=request.question,
-        )
+        config = {
+                "configurable": {
+                    "thread_id": str(session.session_id),
+                },
+                "run_name": "chat_request",
+                "tags": ["chat"],
+                "metadata": {
+                    "session_id": str(session.session_id),
+                    "user_id": str(current_user.id),
+                    "document_count": len(request.document_ids or []),
+                },
+            }
 
-        result = graph.invoke(
+
+        result = http_request.app.state.graph.invoke(
             {
                 "question": request.question,
                 "route": "",
                 "retrieved_docs": [],
                 "answer": "",
                 "messages": messages,
+                "summary": summary,
                 "retry_count": 0,
                 "retrieval_score": "",
                 "rewritten_query": "",
@@ -161,7 +180,7 @@ def chat(
                 "user_id": current_user.id,
                 "document_ids": request.document_ids,
             },
-            config={"configurable": {"thread_id": str(session.session_id)}},
+            config=config,
         )
 
         interrupts = result.get("__interrupt__", []) if isinstance(result, dict) else []
@@ -174,6 +193,12 @@ def chat(
             )
 
         answer = _answer_text(result.get("answer") if isinstance(result, dict) else None)
+        chat_service.save_message(
+            session_id=session.session_id,
+            role="user",
+            user_id=current_user.id,
+            content=request.question,
+        )
         chat_service.save_message(
             session_id=session.session_id,
             role="assistant",

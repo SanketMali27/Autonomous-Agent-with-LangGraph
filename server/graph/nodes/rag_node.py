@@ -8,6 +8,26 @@ searcher = HybridSearcher()
 
 def rag_node(state: AgentState):
 
+    question = state["question"].lower()
+
+    document_level_request = any(
+        phrase in question
+        for phrase in [
+            "explain this document",
+            "explain the document",
+            "summarize this document",
+            "summarize the document",
+            "summarize this pdf",
+            "explain this pdf",
+            "document summary",
+            "give me a summary",
+            "give me an overview",
+            "what is this document about",
+        ]
+    )
+
+    state["document_level_request"] = document_level_request
+    
     docs = searcher.search(
         state["question"],
         limit=5,

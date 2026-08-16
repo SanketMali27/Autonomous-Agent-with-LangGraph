@@ -2,7 +2,11 @@ from services.document_service import get_user_documents
 from graph.state import AgentState
 from database.db import SessionLocal
 
-
+from langsmith import traceable
+@traceable(
+    name="meta_node",
+    run_type="tool",
+)
 def meta_node(state: AgentState):
 
     user_id = state["user_id"]
