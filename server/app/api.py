@@ -29,6 +29,9 @@ from services.chat_service import ChatService
 from services.document_service import get_user_documents
 from services.prompt_builder import build_messages
 from contextlib import asynccontextmanager
+from app.guardrails.service import GuardrailService
+from nemoguardrails.rails.llm.options import RailStatus
+
 
 
 logger = logging.getLogger(__name__)
@@ -38,8 +41,9 @@ MAX_UPLOAD_SIZE = 25 * 1024 * 1024
 async def lifespan(app: FastAPI):
     with create_memory() as memory:
         app.state.graph = build_graph(memory)
-        yield
+        app.state.guardrails = GuardrailService()
 
+        yield
 
 app = FastAPI(
     title="Autonomous Research & Analytics Agent",
@@ -103,7 +107,7 @@ def _answer_text(value: object) -> str:
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(
+async def chat(
     request: ChatRequest,
     http_request: FastAPIRequest,
     db: Session = Depends(get_db),
@@ -113,6 +117,16 @@ def chat(
     requested_session_id = request.session_id
 
     try:
+        guardrails = http_request.app.state.guardrails
+
+        input_result = await guardrails.check_input(request.question)
+
+        if input_result.status == RailStatus.BLOCKED:
+            return ChatResponse(
+                status="completed",
+                answer="I can't help with that request.",
+                session_id=requested_session_id,
+            )
         session = chat_service.get_session(
             session_id=requested_session_id,
             user_id=current_user.id,
@@ -137,7 +151,7 @@ def chat(
                 user_id=current_user.id,
                 title=request.question[:50],
             )
-
+             
         summary = chat_service.get_summary(session.session_id, current_user.id)
         recent_messages = chat_service.get_recent_messages(
             session.session_id,
@@ -193,6 +207,10 @@ def chat(
             )
 
         answer = _answer_text(result.get("answer") if isinstance(result, dict) else None)
+        output_result = await guardrails.check_output(answer)
+
+        if output_result.status == RailStatus.BLOCKED:
+            answer = "I can't provide that response."
         chat_service.save_message(
             session_id=session.session_id,
             role="user",

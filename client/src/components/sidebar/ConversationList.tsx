@@ -15,15 +15,16 @@ export default function ConversationList() {
 
     return (
         <div className="space-y-2">
-            <h2 className="px-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Conversations
-            </h2>
+            <div className="flex items-center justify-between px-2">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Recent chats
+                </h2>
+                {sessions.length > 0 && <span className="text-[11px] text-slate-600">{sessions.length}</span>}
+            </div>
 
             {sessions.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-white/10 p-4 text-center">
-                    <p className="text-sm text-slate-400">
-                        No conversations yet
-                    </p>
+                    <p className="text-sm text-slate-400">No chats yet</p>
 
                     <p className="mt-1 text-xs text-slate-500">
                         Start a new chat to begin.
@@ -37,11 +38,11 @@ export default function ConversationList() {
                             session.session_id;
 
                         return (
-                            <div
+                        <div
                                 key={session.session_id}
                                 className={`group flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition-all duration-200 ${active
-                                    ? "border border-blue-500 bg-slate-800 text-white"
-                                    : "border border-transparent text-slate-300 hover:bg-slate-800/60 hover:text-white"
+                                    ? "border border-blue-400/30 bg-blue-500/10 text-white"
+                                    : "border border-transparent text-slate-400 hover:bg-white/5 hover:text-white"
                                     }`}
                             >
                                 <button
@@ -49,7 +50,7 @@ export default function ConversationList() {
                                     onClick={() => setCurrentSession(session.session_id)}
                                     className="flex min-w-0 flex-1 items-center gap-3 text-left"
                                 >
-                                    <MessageSquare size={16} className="shrink-0" />
+                                    <MessageSquare size={15} className="shrink-0 text-slate-500" />
 
                                     <span className="truncate text-sm font-medium">
                                         {session.title}
@@ -69,7 +70,7 @@ export default function ConversationList() {
                                             }
                                         })();
                                     }}
-                                    className="rounded-lg p-1.5 text-slate-500 opacity-0 transition group-hover:opacity-100 hover:bg-red-500/15 hover:text-red-300"
+                                    className="rounded-md p-1.5 text-slate-600 opacity-0 transition group-hover:opacity-100 hover:bg-red-500/15 hover:text-red-300 focus:opacity-100"
                                 >
                                     <Trash2 size={14} />
                                 </button>

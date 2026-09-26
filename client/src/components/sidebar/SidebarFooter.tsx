@@ -11,32 +11,28 @@ export default function SidebarFooter({
     onLogout,
 }: Props) {
     return (
-        <div className="space-y-4">
-            <div className="flex items-center gap-3 rounded-xl bg-slate-800/70 p-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 font-semibold text-white">
+        <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-2 py-2">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-sm font-semibold text-blue-200">
                     {(username ?? "U")[0].toUpperCase()}
                 </div>
 
-                <div className="overflow-hidden">
-                    <p className="text-xs text-slate-400">
-                        Logged in as
-                    </p>
-
-                    <p className="truncate font-medium text-white">
+                <div className="min-w-0 overflow-hidden">
+                    <p className="truncate text-sm font-medium text-white">
                         {username ?? "User"}
                     </p>
+                    <p className="truncate text-[11px] text-slate-500">Signed in</p>
                 </div>
             </div>
 
             <Button
                 variant="danger"
-                className="w-full rounded-xl py-3 transition-all duration-300 hover:scale-[1.02]"
+                aria-label="Log out"
+                title="Log out"
+                className="rounded-lg p-2 text-slate-400 transition hover:bg-red-500/10 hover:text-red-300"
                 onClick={onLogout}
             >
-                <span className="inline-flex items-center gap-2">
-                    <LogOut size={16} />
-                    Logout
-                </span>
+                <LogOut size={17} />
             </Button>
         </div>
     );

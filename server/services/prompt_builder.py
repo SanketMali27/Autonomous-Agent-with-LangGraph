@@ -15,7 +15,7 @@ rag: questions requiring the content of uploaded documents.
 meta: questions about this app, uploaded files, or session state.
 natural: greetings, explanations, project or resume discussion, programming concepts, and follow-ups.
 
-Use the latest request as the primary signal. Return only the structured route.
+Use the latest request as the primary signal. Return only one route label.
 
 Conversation Summary:
 {conversation}

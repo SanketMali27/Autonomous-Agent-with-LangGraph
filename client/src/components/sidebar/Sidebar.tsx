@@ -1,7 +1,6 @@
 
 
 import type { Document } from "../../api/documents.api";
-import DocumentSelector from "../DocumentSelector";
 import DocumentList from "./DocumentList";
 import SidebarFooter from "./SidebarFooter";
 import SidebarHeader from "./SidebarHeader";
@@ -20,9 +19,10 @@ interface Props {
     selectedDocumentIds: string[];
     onSearchAllChange: (searchAll: boolean) => void;
     onToggleDocument: (documentId: string) => void;
-    onClearSelection: () => void;
     onDelete: (id: string) => void;
     onLogout: () => void;
+    isOpen: boolean;
+    onClose: () => void;
 }
 
 export default function Sidebar({
@@ -36,23 +36,33 @@ export default function Sidebar({
     selectedDocumentIds,
     onSearchAllChange,
     onToggleDocument,
-    onClearSelection,
     onDelete,
     onLogout,
+    isOpen,
+    onClose,
 }: Props) {
     return (
-        <aside className="relative z-10 hidden h-screen w-80 shrink-0 flex-col border-r border-white/10 bg-slate-900/70 backdrop-blur-xl lg:flex">
-            <div className="border-b border-white/10 px-4 py-4">
+        <>
+            {isOpen && (
+                <button
+                    type="button"
+                    aria-label="Close navigation"
+                    onClick={onClose}
+                    className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm lg:hidden"
+                />
+            )}
+            <aside className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-[min(88vw,320px)] shrink-0 flex-col border-r border-white/10 bg-[#11182a] shadow-2xl shadow-black/40 transition-transform duration-200 lg:relative lg:z-10 lg:h-screen lg:w-[292px] lg:translate-x-0 lg:shadow-none ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
+            <div className="border-b border-white/8 px-4 py-4">
                 <SidebarHeader onNewChat={onNewChat} />
             </div>
 
             {/* Scrollable area */}
             <div className="flex-1 overflow-y-auto">
-                <div className="border-b border-white/10 px-2 py-2">
+                <div className="border-b border-white/8 px-2 py-3">
                     <ConversationList />
                 </div>
 
-                <div className="border-b border-white/10 px-4 py-4">
+                <div className="border-b border-white/8 px-3 py-3">
                     <UploadSection
                         onUpload={onUpload}
                         loading={loading}
@@ -65,18 +75,7 @@ export default function Sidebar({
                     )}
                 </div>
 
-                <div className="border-b border-white/10 px-4 py-4">
-                    <DocumentSelector
-                        documents={documents}
-                        searchAll={searchAll}
-                        selectedDocumentIds={selectedDocumentIds}
-                        onSearchAllChange={onSearchAllChange}
-                        onToggleDocument={onToggleDocument}
-                        onClearSelection={onClearSelection}
-                    />
-                </div>
-
-                <div className="px-2 py-2">
+                <div className="px-2 py-3">
                     <DocumentList
                         documents={documents}
                         searchAll={searchAll}
@@ -88,12 +87,13 @@ export default function Sidebar({
                 </div>
             </div>
 
-            <div className="border-t border-white/10 px-4 py-3">
+            <div className="border-t border-white/8 px-3 py-3">
                 <SidebarFooter
                     username={username}
                     onLogout={onLogout}
                 />
             </div>
-        </aside>
+            </aside>
+        </>
     );
 }

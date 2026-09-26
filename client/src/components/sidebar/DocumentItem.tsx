@@ -20,20 +20,29 @@ export default function DocumentItem({
     return (
         <div
             onClick={onClick}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onClick();
+                }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-pressed={selected}
             className={clsx(
-                "group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-2xl border px-4 py-3 transition-all duration-300",
+                "group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl border px-3 py-2.5 transition",
                 selected
-                    ? "border-blue-500 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 shadow-lg shadow-blue-500/20"
-                    : "border-slate-700 bg-slate-800/60 hover:border-blue-400 hover:bg-slate-700/70 hover:shadow-lg"
+                    ? "border-blue-400/30 bg-blue-500/10"
+                    : "border-transparent bg-slate-900/20 hover:border-white/10 hover:bg-white/5"
             )}
         >
             <div className="flex min-w-0 items-center gap-3">
                 <div
                     className={clsx(
-                        "flex h-10 w-10 items-center justify-center rounded-xl transition",
+                        "flex h-8 w-8 items-center justify-center rounded-lg transition",
                         selected
-                            ? "bg-blue-500 text-white"
-                            : "bg-slate-700 text-slate-300 group-hover:bg-blue-500 group-hover:text-white"
+                            ? "bg-blue-500/20 text-blue-200"
+                            : "bg-slate-800 text-slate-500 group-hover:text-slate-300"
                     )}
                 >
                     <FileText size={18} />
@@ -63,7 +72,7 @@ export default function DocumentItem({
                     e.stopPropagation();
                     onDelete();
                 }}
-                className="rounded-lg p-2 text-slate-400 opacity-0 transition-all duration-300 hover:bg-red-500/20 hover:text-red-400 group-hover:opacity-100"
+                className="rounded-lg p-2 text-slate-500 opacity-0 transition group-hover:opacity-100 focus:opacity-100 hover:bg-red-500/15 hover:text-red-300"
                 title="Delete document"
                 aria-label={`Delete ${name}`}
             >

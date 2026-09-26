@@ -23,14 +23,14 @@ export default function ChatMessage({ role, content }: Props) {
     };
 
     return (
-        <div className={clsx("group mb-7 flex w-full px-1", isUser ? "justify-end" : "justify-start")}>
-            <div className={clsx("flex w-full max-w-3xl items-start gap-3", isUser && "flex-row-reverse")}>
+        <div className={clsx("group flex w-full px-1", isUser ? "mb-4 justify-end" : "mb-5 justify-start")}>
+            <div className={clsx("flex w-full items-start gap-2.5", isUser ? "max-w-[min(100%,42rem)] flex-row-reverse" : "max-w-3xl")}>
                 <div
                     className={clsx(
-                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-md",
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
                         isUser
-                            ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white"
-                            : "bg-gradient-to-br from-emerald-500 to-cyan-500 text-white"
+                            ? "bg-blue-500/20 text-blue-200"
+                            : "bg-emerald-500/15 text-emerald-200"
                     )}
                 >
                     {isUser ? <User size={16} /> : <Bot size={16} />}
@@ -39,10 +39,10 @@ export default function ChatMessage({ role, content }: Props) {
                 <div className="flex flex-col gap-1">
                     <div
                         className={clsx(
-                            "rounded-2xl px-4 py-3 shadow-md transition-colors",
+                            "px-3.5 py-2.5 text-[15px] leading-6 transition-colors sm:px-4",
                             isUser
-                                ? "rounded-tr-sm bg-gradient-to-br from-blue-600 to-indigo-600 text-white"
-                                : "rounded-tl-sm border border-slate-700 bg-slate-800 text-slate-100"
+                                ? "rounded-2xl rounded-tr-md bg-blue-600 text-white shadow-sm shadow-blue-950/20"
+                                : "max-w-full rounded-xl border border-white/8 bg-white/[0.025] text-slate-200"
                         )}
                     >
                         {isUser ? (

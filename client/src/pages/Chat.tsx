@@ -98,8 +98,8 @@ export default function Chat() {
             : `${selectedDocuments.length} selected`;
 
     return (
-        <div className="relative flex min-h-0 h-full flex-col overflow-hidden rounded-3xl border border-white/5 bg-slate-900 shadow-2xl shadow-black/20">
-            <div className="shrink-0 border-b border-slate-700/80 bg-slate-900/85 px-5 py-4 backdrop-blur-xl md:px-6">
+        <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-white/8 bg-[#101729] shadow-xl shadow-black/20 sm:rounded-2xl">
+            <div className="shrink-0 border-b border-white/8 bg-[#101729] px-4 py-3 md:px-5">
                 <ChatHeader
                     scopeLabel={scopeLabel}
                     hasActiveScope={
@@ -125,12 +125,12 @@ export default function Chat() {
             )}
 
             {error && (
-                <div className="mx-4 mb-2 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                <div role="alert" className="mx-3 mb-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-200 md:mx-5">
                     {error}
                 </div>
             )}
 
-            <div className="sticky bottom-0 z-10 shrink-0 border-t border-slate-700/80 bg-slate-900/90 p-3 backdrop-blur-xl md:p-4">
+            <div className="z-10 shrink-0 border-t border-white/8 bg-[#101729] p-3 md:p-4">
                 <div className="mb-3 lg:hidden">
                     <DocumentSelector
                         documents={documents}
@@ -141,15 +141,10 @@ export default function Chat() {
                         onClearSelection={clearSelection}
                     />
                 </div>
-                <div className="mx-auto mb-3 flex max-w-5xl items-center gap-2 text-xs text-slate-400">
-                    <span
-                        aria-hidden="true"
-                        className="h-2 w-2 rounded-full bg-blue-400"
-                    />
-                    <span>Searching:</span>
-                    <span className="font-semibold text-blue-300">
-                        {searchLabel}
-                    </span>
+                <div className="mx-auto mb-2 flex max-w-4xl items-center gap-2 text-xs text-slate-500">
+                    <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${searchAll || selectedDocuments.length > 0 ? "bg-emerald-400" : "bg-amber-400"}`} />
+                    <span>Search scope:</span>
+                    <span className="truncate font-medium text-slate-300">{searchLabel}</span>
                 </div>
 
                 <ChatInput

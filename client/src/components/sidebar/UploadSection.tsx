@@ -22,32 +22,28 @@ export default function UploadSection({
 
     return (
         <div>
+            <div className="mb-2 flex items-center justify-between px-1">
+                <div>
+                    <p className="text-sm font-semibold text-white">Documents</p>
+                    <p className="text-xs text-slate-500">Add PDFs to your workspace</p>
+                </div>
+                <FileUp size={16} className="text-slate-500" />
+            </div>
             <label
                 className="
-                flex cursor-pointer flex-col items-center justify-center
-                rounded-2xl
-                border-2 border-dashed border-slate-600
-                bg-slate-800/60
-                p-6
-                text-center
-                transition-all duration-300
-                hover:border-blue-500
-                hover:bg-slate-700/60
+                flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-700
+                bg-slate-900/40 px-3 py-2.5 transition hover:border-blue-400/70 hover:bg-blue-500/5
                 "
             >
-                <div className="mb-2 rounded-2xl bg-slate-700/70 p-3 text-slate-200">
-                    <FileUp size={24} />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-300">
+                    <FileUp size={17} />
                 </div>
-
-                <p className="font-medium text-white">
-                    {loading
-                        ? "Processing PDF..."
-                        : "Upload PDF"}
-                </p>
-
-                <p className="mt-1 text-xs text-slate-400">
-                    Click to browse
-                </p>
+                <div className="min-w-0">
+                    <p className="text-sm font-medium text-white">
+                        {loading ? "Processing PDF..." : "Upload a PDF"}
+                    </p>
+                    <p className="text-xs text-slate-500">Click to browse</p>
+                </div>
 
                 <input
                     hidden

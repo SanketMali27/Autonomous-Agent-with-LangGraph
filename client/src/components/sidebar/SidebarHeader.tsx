@@ -1,7 +1,4 @@
-import {
-    Bot,
-    Sparkles,
-} from "lucide-react";
+import { Bot, Plus } from "lucide-react";
 import Button from "../ui/Button";
 
 interface Props {
@@ -12,27 +9,27 @@ export default function SidebarHeader({
     onNewChat,
 }: Props) {
     return (
-        <div className="space-y-5">
-            <div>
-                <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-white">
-                    <Bot
-                        size={24}
-                        className="text-blue-300"
-                    />
-                    AI Assistant
-                </h1>
-
-                <p className="mt-1 text-sm text-slate-400">
-                    Chat with your documents
-                </p>
+        <div className="space-y-4">
+            <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/15 text-blue-300">
+                    <Bot size={20} />
+                </div>
+                <div className="min-w-0">
+                    <h1 className="truncate text-sm font-semibold tracking-tight text-white">
+                        Research Agent
+                    </h1>
+                    <p className="mt-0.5 text-xs text-slate-500">
+                        Your AI workspace
+                    </p>
+                </div>
             </div>
 
             <Button
-                className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-500"
+                className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-950/25 transition hover:bg-blue-500"
                 onClick={onNewChat}
             >
                 <span className="inline-flex items-center gap-2">
-                    <Sparkles size={16} />
+                    <Plus size={17} />
                     New Chat
                 </span>
             </Button>
