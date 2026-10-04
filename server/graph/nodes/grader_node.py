@@ -7,7 +7,7 @@ from services.prompt_builder import GRADER_PROMPT
 
 class RetrievalGrade(BaseModel):
     decision: str = Field(
-        description="Either 'relevant' or 'irrelevant'"
+        description="Either 'relevant' or 'irrelevant' or 'web' if the retrieved documents are insufficient or irrelevant."
     )
 
 

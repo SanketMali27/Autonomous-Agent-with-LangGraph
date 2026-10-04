@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+from schemas.agent_decisions import RouteDecision
 
 from app.llm import llm
 from graph.router import rule_based_router
@@ -62,7 +63,9 @@ def supervisor_node(state: AgentState):
     )
 
     try:
-        result = llm.invoke(prompt)
+        structured_llm = llm.with_structured_output(RouteDecision,
+             method="function_calling",)
+        result = structured_llm.invoke(prompt)
         state["route"] = _route_from_response(result)
     except Exception:
         logger.exception("Route classification failed; using natural route")

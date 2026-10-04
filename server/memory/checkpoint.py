@@ -1,13 +1,13 @@
-from contextlib import contextmanager
-from langgraph.checkpoint.postgres import PostgresSaver
+from contextlib import asynccontextmanager
+
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from app.config import DATABASE_URL
 
 
-@contextmanager
-def create_memory():
-    with PostgresSaver.from_conn_string(DATABASE_URL) as memory:
+@asynccontextmanager
+async def create_memory():
+    async with AsyncPostgresSaver.from_conn_string(DATABASE_URL) as memory:
+        await memory.setup()
         print("CHECKPOINTER CREATED")
         print("Connection closed:", memory.conn.closed)
-
-        memory.setup()
         yield memory

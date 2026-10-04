@@ -2,11 +2,13 @@ from app.llm import llm
 from graph.state import AgentState
 from retrieval.hybrid_search import HybridSearcher
 from services.prompt_builder import RAG_PROMPT
+from app.guardrails.service import GuardrailService
+from nemoguardrails.rails.llm.options import RailStatus
 
 searcher = HybridSearcher()
+guardrail_service = GuardrailService()
 
-
-def rag_node(state: AgentState):
+async def rag_node(state: AgentState):
 
     question = state["question"].lower()
 
@@ -38,9 +40,21 @@ def rag_node(state: AgentState):
     context = "\n\n".join(
         doc["text"] for doc in docs
     )
+
     print("USER:", state["user_id"])
     print("DOCUMENT:", state.get("document_ids"))
 
+    allowed, reason = await guardrail_service.check_retrieved_context(context)
+
+    if not allowed:
+        state["retrieved_docs"] = []
+        state["answer"] = (
+            "The retrieved document content was blocked because "
+            "it may contain unsafe instructions."
+        )
+        return state
+
+        
     for doc in docs:
         print(
         doc.get("document_name"),

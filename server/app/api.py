@@ -1,6 +1,8 @@
 import logging
 from pathlib import Path
 from uuid import uuid4
+import logfire
+from app.observability import configure_observability
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
@@ -39,7 +41,7 @@ MAX_UPLOAD_SIZE = 25 * 1024 * 1024
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    with create_memory() as memory:
+    async with create_memory() as memory:
         app.state.graph = build_graph(memory)
         app.state.guardrails = GuardrailService()
 
@@ -49,7 +51,10 @@ app = FastAPI(
     title="Autonomous Research & Analytics Agent",
     lifespan=lifespan,
 )
-
+logfire.configure()
+logfire.instrument_system_metrics()
+logfire.instrument_fastapi(app)
+configure_observability()
 @app.exception_handler(StarletteHTTPException)
 async def handle_http_exception(
     request: Request,
@@ -178,7 +183,7 @@ async def chat(
             }
 
 
-        result = http_request.app.state.graph.invoke(
+        result = await http_request.app.state.graph.ainvoke(
             {
                 "question": request.question,
                 "route": "",

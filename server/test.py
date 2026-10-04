@@ -1,7 +1,5 @@
-from auth.password import hash_password, verify_password
+from app.llm import llm
 
-hashed = hash_password("password123")
+response = llm.invoke("hii")
 
-print(hashed)
-print(verify_password("password123", hashed))
-print(verify_password("wrongpassword", hashed))
+print(response.content)

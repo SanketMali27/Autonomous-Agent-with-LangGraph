@@ -1,0 +1,3 @@
+define flow self check retrieval
+  $retrieved_content = $retrieved_content
+  $result = execute self check retrieval
