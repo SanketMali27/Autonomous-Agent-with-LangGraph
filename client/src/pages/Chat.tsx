@@ -9,20 +9,24 @@ import {
     getSessions,
     getSessionMessages,
 } from "../api/session.api";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSessionStore } from "../store/sessionStore";
 import { getApiErrorMessage } from "../lib/apiError";
 
+type SessionMessagesRequest = ReturnType<typeof getSessionMessages>;
+const sessionMessageRequests = new Map<string, SessionMessagesRequest>();
+
 export default function Chat() {
     const {
-        messages,
+        messagesBySession,
+        loadedSessionIds,
         loading,
+        loadingSessionId,
         error,
         pendingApproval,
         sendMessage,
         approve,
-        setMessages,
-        setSessionId,
+        setSessionMessages,
         setError,
 
     } = useChatStore();
@@ -33,6 +37,14 @@ export default function Chat() {
         setError: setSessionError,
 
     } = useSessionStore();
+
+    const activeCacheKey = currentSessionId || "";
+    const messages = messagesBySession[activeCacheKey] ?? [];
+    const [failedSessionId, setFailedSessionId] = useState<string | null>(null);
+    const [sessionLoadAttempt, setSessionLoadAttempt] = useState(0);
+    const messagesLoading = Boolean(currentSessionId)
+        && !loadedSessionIds.includes(currentSessionId)
+        && failedSessionId !== currentSessionId;
 
     useEffect(() => {
         async function load() {
@@ -49,70 +61,67 @@ export default function Chat() {
 
     useEffect(() => {
         if (!currentSessionId) return;
+        if (useChatStore.getState().loadedSessionIds.includes(currentSessionId)) return;
+        let cancelled = false;
 
         async function loadMessages() {
             try {
-                const msgs = await getSessionMessages(currentSessionId);
-                setSessionId(currentSessionId);
-                setMessages(msgs.map((m) => ({
-                    id: m.message_id,
-                    role: m.role,
-                    content: m.content,
-                })));
+                let request = sessionMessageRequests.get(currentSessionId);
+                if (!request) {
+                    request = getSessionMessages(currentSessionId);
+                    sessionMessageRequests.set(currentSessionId, request);
+                    void request.then(
+                        () => { if (sessionMessageRequests.get(currentSessionId) === request) sessionMessageRequests.delete(currentSessionId); },
+                        () => { if (sessionMessageRequests.get(currentSessionId) === request) sessionMessageRequests.delete(currentSessionId); },
+                    );
+                }
+                const msgs = await request;
+                if (!useChatStore.getState().loadedSessionIds.includes(currentSessionId)) {
+                    setSessionMessages(currentSessionId, msgs.map((m) => ({
+                        id: m.message_id,
+                        role: m.role,
+                        content: m.content,
+                    })));
+                }
+                setFailedSessionId(null);
             } catch (error) {
-                setError(getApiErrorMessage(error, "Unable to load this conversation."));
+                if (!cancelled) {
+                    setFailedSessionId(currentSessionId);
+                    setError(getApiErrorMessage(error, "Unable to load this conversation."));
+                }
             }
         }
 
         void loadMessages();
-    }, [currentSessionId, setError, setMessages, setSessionId]);
+        return () => { cancelled = true; };
+    }, [currentSessionId, sessionLoadAttempt, setError, setSessionMessages]);
 
     const {
         documents,
-        searchAll,
         selectedDocumentIds,
-        setSearchAll,
         toggleDocument,
         clearSelection,
     } = useDocumentStore();
 
-    const selectedDocuments = documents.filter(
-        (document) =>
-            selectedDocumentIds.includes(
-                document.document_id
-            )
-    );
-
-    const scopeLabel = searchAll
+    const scopeLabel = selectedDocumentIds.length === 0
         ? "All documents"
-        : selectedDocuments.length === 0
-            ? "No documents selected"
-            : selectedDocuments.length === 1
-                ? selectedDocuments[0].document_name
-                : `${selectedDocuments.length} selected documents`;
-
-    const searchLabel = searchAll
-        ? "All documents"
-        : selectedDocuments.length === 0
-            ? "Choose one or more documents"
-            : `${selectedDocuments.length} selected`;
+        : `${selectedDocumentIds.length} document${selectedDocumentIds.length === 1 ? "" : "s"} selected`;
 
     return (
         <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-white/8 bg-[#101729] shadow-xl shadow-black/20 sm:rounded-2xl">
             <div className="shrink-0 border-b border-white/8 bg-[#101729] px-4 py-3 md:px-5">
                 <ChatHeader
                     scopeLabel={scopeLabel}
-                    hasActiveScope={
-                        searchAll ||
-                        selectedDocuments.length > 0
-                    }
+                    hasActiveScope
                 />
             </div>
 
             <div className="min-h-0 flex-1 overflow-hidden">
                 <ChatWindow
+                    key={currentSessionId || "new-chat"}
                     messages={messages}
-                    loading={loading}
+                    loading={loading && loadingSessionId === activeCacheKey && !messagesLoading}
+                    sessionLoading={messagesLoading}
                 />
             </div>
 
@@ -126,7 +135,12 @@ export default function Chat() {
 
             {error && (
                 <div role="alert" className="mx-3 mb-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-200 md:mx-5">
-                    {error}
+                    <span>{error}</span>
+                    {failedSessionId === currentSessionId && <button type="button" onClick={() => {
+                        setError(null);
+                        setFailedSessionId(null);
+                        setSessionLoadAttempt((attempt) => attempt + 1);
+                    }} className="ml-3 rounded-md px-2 py-1 font-medium text-red-100 underline underline-offset-2 hover:bg-red-500/15 focus-visible:outline">Retry</button>}
                 </div>
             )}
 
@@ -134,17 +148,15 @@ export default function Chat() {
                 <div className="mb-3 lg:hidden">
                     <DocumentSelector
                         documents={documents}
-                        searchAll={searchAll}
                         selectedDocumentIds={selectedDocumentIds}
-                        onSearchAllChange={setSearchAll}
                         onToggleDocument={toggleDocument}
                         onClearSelection={clearSelection}
                     />
                 </div>
                 <div className="mx-auto mb-2 flex max-w-4xl items-center gap-2 text-xs text-slate-500">
-                    <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${searchAll || selectedDocuments.length > 0 ? "bg-emerald-400" : "bg-amber-400"}`} />
+                    <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                     <span>Search scope:</span>
-                    <span className="truncate font-medium text-slate-300">{searchLabel}</span>
+                    <span className="truncate font-medium text-slate-300">{scopeLabel}</span>
                 </div>
 
                 <ChatInput
@@ -152,10 +164,7 @@ export default function Chat() {
                         loading ||
                         Boolean(pendingApproval)
                     }
-                    searchAll={searchAll}
-                    selectedDocumentIds={
-                        selectedDocumentIds
-                    }
+                    selectedDocumentIds={selectedDocumentIds}
                     onSend={sendMessage}
                 />
             </div>

@@ -26,3 +26,5 @@ RECENT_MESSAGE_LIMIT = 6
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CACHE_TTL_SECONDS = int(os.getenv("CACHE_TTL_SECONDS", "3600"))

@@ -12,13 +12,9 @@ import { getApiErrorMessage } from "../lib/apiError";
 interface DocumentStore {
     documents: Document[];
 
-    searchAll: boolean;
-
     selectedDocumentIds: string[];
 
     setDocuments: (docs: Document[]) => void;
-
-    setSearchAll: (value: boolean) => void;
 
     toggleDocument: (id: string) => void;
     loading: boolean;
@@ -28,7 +24,6 @@ interface DocumentStore {
     uploadDocument: (file: File) => Promise<void>;
     deleteDocument: (documentId: string) => Promise<void>;
 
-    selectAllDocuments: () => void;
     clearSelection: () => void;
 }
 
@@ -37,8 +32,6 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
 
 
     documents: [],
-
-    searchAll: true,
 
     selectedDocumentIds: [],
 
@@ -50,14 +43,6 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         set({
             documents: docs,
         }),
-
-    setSearchAll: (value) =>
-        set((state) => ({
-            searchAll: value,
-            selectedDocumentIds: value
-                ? []
-                : state.selectedDocumentIds,
-        })),
 
     toggleDocument: (id) =>
         set((state) => {
@@ -151,17 +136,5 @@ export const useDocumentStore = create<DocumentStore>((set) => ({
         }
     },
 
-    clearSelection: () => {
-        set({
-            selectedDocumentIds: [],
-        });
-    },
-    selectAllDocuments: () => {
-        set((state) => ({
-            selectedDocumentIds: state.documents.map(
-                (doc) => doc.document_id
-            ),
-        }));
-    },
-
+    clearSelection: () => set({ selectedDocumentIds: [] }),
 }));

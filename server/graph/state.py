@@ -18,3 +18,7 @@ class AgentState(TypedDict):
     document_level_request: bool
     user_id: str
     document_ids: list[str] | None
+    cache_key: str | None
+    cache_hit: bool
+    semantic_cache_hit: bool
+    cache_route: str

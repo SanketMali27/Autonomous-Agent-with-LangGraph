@@ -41,20 +41,29 @@ export const getApiErrorMessage = (
         return "Unable to reach the server. Check your connection and try again.";
     }
 
-    const data = error.response.data;
-    if (typeof data === "string" && data) return data;
-    const detailMessage = messageFromDetails(data?.error?.details)
-        ?? messageFromDetails(data?.detail);
-    if (data?.error?.message) {
-        if (data.error.code === "VALIDATION_ERROR" && detailMessage) {
-            return `${data.error.message} ${detailMessage}`;
+    const data = error.response.data as ErrorEnvelope | string;
+    if (typeof data === "string" && data) {
+        return data.length <= 240 && !/traceback|exception|file ".*", line \d+/i.test(data)
+            ? data
+            : fallback;
+    }
+    const envelope = data as ErrorEnvelope;
+    const detailMessage = messageFromDetails(envelope?.error?.details)
+        ?? messageFromDetails(envelope?.detail);
+    if (envelope?.error?.message) {
+        if (envelope.error.code === "VALIDATION_ERROR" && detailMessage) {
+            return `${envelope.error.message} ${detailMessage}`;
         }
-        return data.error.message;
+        return envelope.error.message;
     }
 
     if (detailMessage) return detailMessage;
-    if (typeof data?.detail === "string") return data.detail;
-    if (typeof data?.message === "string") return data.message;
+    if (typeof envelope?.detail === "string") {
+        return envelope.detail.length <= 240 && !/traceback|exception|file ".*", line \d+/i.test(envelope.detail)
+            ? envelope.detail
+            : fallback;
+    }
+    if (typeof envelope?.message === "string") return envelope.message.slice(0, 240);
 
     return fallback;
 };

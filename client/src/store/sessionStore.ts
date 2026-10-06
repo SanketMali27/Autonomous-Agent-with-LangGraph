@@ -10,6 +10,7 @@ interface SessionStore {
     setSessions: (sessions: Session[]) => void;
     setError: (error: string | null) => void;
     setCurrentSession: (id: string) => void;
+    renameSession: (id: string, title: string) => void;
     addSession: (session: Session) => void;
     touchSession: (sessionId: string, title?: string) => void;
     removeSession: (id: string) => void;
@@ -21,17 +22,32 @@ export const useSessionStore = create<SessionStore>((set) => ({
     currentSessionId: "",
     error: null,
 
-    setSessions: (sessions) => set({
-        sessions: [...sessions].sort(
-            (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at)
-        ),
-        error: null,
+    setSessions: (sessions) => set((state) => {
+        const serverIds = new Set(sessions.map((session) => session.session_id));
+        const merged = [
+            ...sessions.map((session) => {
+                const local = state.sessions.find((item) => item.session_id === session.session_id);
+                return local ? { ...session, title: local.title } : session;
+            }),
+            ...state.sessions.filter((session) => !serverIds.has(session.session_id)),
+        ];
+        return {
+            sessions: merged.sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at)),
+            error: null,
+        };
     }),
 
     setError: (error) => set({ error }),
 
     setCurrentSession: (id) =>
         set({ currentSessionId: id }),
+
+    renameSession: (id, title) =>
+        set((state) => ({
+            sessions: state.sessions.map((session) =>
+                session.session_id === id ? { ...session, title } : session
+            ),
+        })),
 
     addSession: (session) =>
         set((state) => ({
@@ -72,17 +88,17 @@ export const useSessionStore = create<SessionStore>((set) => ({
                         (session) => session.session_id !== sessionId
                     ),
                 ],
-                currentSessionId: sessionId,
             };
         }),
 
     removeSession: (id) =>
-        set((state) => ({
-            sessions: state.sessions.filter(
-                (s) => s.session_id !== id
-            ),
-            currentSessionId: state.currentSessionId === id
-                ? ""
-                : state.currentSessionId,
-        })),
+        set((state) => {
+            const sessions = state.sessions.filter((session) => session.session_id !== id);
+            return {
+                sessions,
+                currentSessionId: state.currentSessionId === id
+                    ? sessions[0]?.session_id ?? ""
+                    : state.currentSessionId,
+            };
+        }),
 }));

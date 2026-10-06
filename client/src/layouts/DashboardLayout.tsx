@@ -17,10 +17,9 @@ export default function DashboardLayout() {
         deleteDocument,
         loading: documentLoading,
         error: documentError,
-        searchAll,
         selectedDocumentIds,
-        setSearchAll,
         toggleDocument,
+        clearSelection,
     } = useDocumentStore();
 
     const { clearChat } = useChatStore();
@@ -43,10 +42,9 @@ export default function DashboardLayout() {
                 onUpload={uploadDocument}
                 loading={documentLoading}
                 error={documentError}
-                searchAll={searchAll}
                 selectedDocumentIds={selectedDocumentIds}
-                onSearchAllChange={setSearchAll}
                 onToggleDocument={toggleDocument}
+                onClearSelection={clearSelection}
                 onDelete={deleteDocument}
                 onLogout={logout}
                 isOpen={sidebarOpen}

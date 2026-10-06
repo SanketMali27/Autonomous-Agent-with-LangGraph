@@ -6,6 +6,16 @@ from uuid import UUID
 class CreateSessionRequest(BaseModel):
     title: str
 
+class RenameSessionRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=100)
+
+    @field_validator("title")
+    @classmethod
+    def title_must_contain_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Title cannot be empty")
+        return value.strip()
+
 class SessionResponse(BaseModel):
     session_id: UUID
     title: str

@@ -9,6 +9,7 @@ from services.chat_service import ChatService
 
 from app.schemas import (
     CreateSessionRequest,
+    RenameSessionRequest,
     SessionResponse,
     ChatMessageResponse,
 )
@@ -50,6 +51,21 @@ def get_sessions(
     )
 
 #Get Session Messages
+@router.patch("/{session_id}", response_model=SessionResponse)
+def rename_session(
+    session_id: UUID,
+    request: RenameSessionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    service = ChatService(ChatRepository(db))
+    return service.update_session_title(
+        session_id=session_id,
+        user_id=current_user.id,
+        title=request.title,
+    )
+
+
 @router.get(
     "/{session_id}",
     response_model=list[ChatMessageResponse],

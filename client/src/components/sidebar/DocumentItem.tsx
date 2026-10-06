@@ -19,24 +19,21 @@ export default function DocumentItem({
 }: Props) {
     return (
         <div
-            onClick={onClick}
-            onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    onClick();
-                }
-            }}
-            role="button"
-            tabIndex={0}
-            aria-pressed={selected}
             className={clsx(
-                "group relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl border px-3 py-2.5 transition",
+                "group relative flex items-center justify-between overflow-hidden rounded-xl border px-3 py-2.5 transition",
                 selected
                     ? "border-blue-400/30 bg-blue-500/10"
                     : "border-transparent bg-slate-900/20 hover:border-white/10 hover:bg-white/5"
             )}
         >
-            <div className="flex min-w-0 items-center gap-3">
+            <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+                <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={onClick}
+                    aria-label={`${selected ? "Deselect" : "Select"} ${name}`}
+                    className="h-4 w-4 shrink-0 accent-blue-500"
+                />
                 <div
                     className={clsx(
                         "flex h-8 w-8 items-center justify-center rounded-lg transition",
@@ -64,7 +61,7 @@ export default function DocumentItem({
                         PDF Document
                     </p>
                 </div>
-            </div>
+            </label>
 
             <button
                 type="button"

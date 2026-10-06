@@ -4,6 +4,10 @@ from uuid import uuid4
 import logfire
 from app.observability import configure_observability
 
+# Configure Logfire before importing modules (such as database.db) that
+# register instrumentation during import.
+configure_observability()
+
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -51,10 +55,8 @@ app = FastAPI(
     title="Autonomous Research & Analytics Agent",
     lifespan=lifespan,
 )
-logfire.configure()
 logfire.instrument_system_metrics()
 logfire.instrument_fastapi(app)
-configure_observability()
 @app.exception_handler(StarletteHTTPException)
 async def handle_http_exception(
     request: Request,

@@ -27,6 +27,11 @@ export async function createSession(title: string): Promise<Session> {
     return res.data;
 }
 
+export async function renameSession(sessionId: string, title: string): Promise<Session> {
+    const res = await api.patch(`/sessions/${sessionId}`, { title });
+    return res.data;
+}
+
 export async function getSessionMessages(
     sessionId: string
 ): Promise<ChatMessage[]> {

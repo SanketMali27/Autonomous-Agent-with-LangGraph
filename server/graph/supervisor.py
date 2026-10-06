@@ -63,9 +63,8 @@ def supervisor_node(state: AgentState):
     )
 
     try:
-        structured_llm = llm.with_structured_output(RouteDecision,
-             method="function_calling",)
-        result = structured_llm.invoke(prompt)
+        
+        result = llm.invoke(prompt)
         state["route"] = _route_from_response(result)
     except Exception:
         logger.exception("Route classification failed; using natural route")

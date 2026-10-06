@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { BarChart3, Bot, FileText, Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowDown, BarChart3, Bot, FileText, Search } from "lucide-react";
 import ChatMessage from "./ChatMessage";
 
 interface Message {
@@ -11,19 +11,43 @@ interface Message {
 interface Props {
     messages: Message[];
     loading?: boolean;
+    sessionLoading?: boolean;
 }
 
 export default function ChatWindow({
     messages,
     loading,
+    sessionLoading = false,
 }: Props) {
     const bottomRef = useRef<HTMLDivElement>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const nearBottomRef = useRef(true);
+    const [showLatest, setShowLatest] = useState(false);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({
-            behavior: "smooth",
-        });
+        if (nearBottomRef.current) {
+            bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        } else {
+            setShowLatest(true);
+        }
     }, [messages, loading]);
+
+    const handleScroll = () => {
+        const element = scrollRef.current;
+        if (!element) return;
+        const nearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 120;
+        nearBottomRef.current = nearBottom;
+        setShowLatest(!nearBottom);
+    };
+
+    if (sessionLoading) {
+        return <div className="flex h-full items-start justify-center bg-[#0e1525] px-5 pt-8" role="status" aria-label="Loading conversation">
+            <div className="flex w-full max-w-4xl items-center gap-3 rounded-xl border border-white/8 bg-white/[0.025] px-4 py-3 text-sm text-slate-400">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-blue-300 border-t-transparent" />
+                Loading conversation…
+            </div>
+        </div>;
+    }
 
     if (messages.length === 0) {
         return (
@@ -58,7 +82,7 @@ export default function ChatWindow({
     }
 
     return (
-        <div className="h-full overflow-y-auto scroll-smooth bg-[#0e1525]">
+        <div ref={scrollRef} onScroll={handleScroll} className="relative h-full overflow-y-auto scroll-smooth bg-[#0e1525]">
             <div className="mx-auto flex max-w-4xl flex-col gap-1 px-3 py-5 sm:px-5 sm:py-7">
                 {messages.map((message) => (
                     <ChatMessage
@@ -85,6 +109,13 @@ export default function ChatWindow({
 
                 <div ref={bottomRef} />
             </div>
+            {showLatest && <button type="button" onClick={() => {
+                nearBottomRef.current = true;
+                bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+                setShowLatest(false);
+            }} className="sticky bottom-4 left-1/2 z-10 mx-auto flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-slate-800 px-3 py-2 text-xs font-medium text-slate-200 shadow-lg hover:bg-slate-700 focus-visible:outline" aria-label="Scroll to latest message">
+                <ArrowDown size={14} /> Scroll to latest
+            </button>}
         </div>
     );
 }

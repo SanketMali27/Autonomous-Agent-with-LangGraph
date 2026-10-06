@@ -15,10 +15,9 @@ interface Props {
     onUpload: (file: File) => Promise<void>;
     loading: boolean;
     error: string | null;
-    searchAll: boolean;
     selectedDocumentIds: string[];
-    onSearchAllChange: (searchAll: boolean) => void;
     onToggleDocument: (documentId: string) => void;
+    onClearSelection: () => void;
     onDelete: (id: string) => void;
     onLogout: () => void;
     isOpen: boolean;
@@ -32,10 +31,9 @@ export default function Sidebar({
     onUpload,
     loading,
     error,
-    searchAll,
     selectedDocumentIds,
-    onSearchAllChange,
     onToggleDocument,
+    onClearSelection,
     onDelete,
     onLogout,
     isOpen,
@@ -59,7 +57,7 @@ export default function Sidebar({
             {/* Scrollable area */}
             <div className="flex-1 overflow-y-auto">
                 <div className="border-b border-white/8 px-2 py-3">
-                    <ConversationList />
+                    <ConversationList onSelect={onClose} />
                 </div>
 
                 <div className="border-b border-white/8 px-3 py-3">
@@ -78,10 +76,9 @@ export default function Sidebar({
                 <div className="px-2 py-3">
                     <DocumentList
                         documents={documents}
-                        searchAll={searchAll}
                         selectedDocumentIds={selectedDocumentIds}
-                        onSearchAllChange={onSearchAllChange}
                         onToggleDocument={onToggleDocument}
+                        onClearSelection={onClearSelection}
                         onDelete={onDelete}
                     />
                 </div>

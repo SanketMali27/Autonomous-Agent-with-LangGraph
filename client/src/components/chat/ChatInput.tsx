@@ -5,17 +5,9 @@ import type {
 import { useRef, useState } from "react";
 import { SendHorizontal } from "lucide-react";
 import Button from "../ui/Button";
-import {
-
-    getSessions,
-
-
-} from "../../api/session.api";
-import { useSessionStore } from "../../store/sessionStore";
 
 interface Props {
     loading: boolean;
-    searchAll: boolean;
     selectedDocumentIds: string[];
     onSend: (
         message: string,
@@ -25,7 +17,6 @@ interface Props {
 
 export default function ChatInput({
     loading,
-    searchAll,
     selectedDocumentIds,
     onSend,
 }: Props) {
@@ -33,36 +24,25 @@ export default function ChatInput({
     const textareaRef =
         useRef<HTMLTextAreaElement>(null);
 
-    const canSend =
-        searchAll ||
-        selectedDocumentIds.length > 0;
-    const {
-        setSessions,
-    } = useSessionStore();
     const handleSend = async () => {
-        if (!message.trim() || loading || !canSend) {
+        if (!message.trim() || loading) {
             return;
         }
 
-        const sent = await onSend(
-            message,
-            searchAll ? null : selectedDocumentIds
-        );
+        const submittedMessage = message;
+        setMessage("");
+        if (textareaRef.current) textareaRef.current.style.height = "auto";
+        textareaRef.current?.focus();
+        const sent = await onSend(submittedMessage.trim(), selectedDocumentIds.length ? selectedDocumentIds : null);
 
-        if (sent) {
-            setMessage("");
-            try {
-                const sessions = await getSessions();
-                setSessions(sessions);
-            } catch {
-                // The chat response already succeeded; keep the optimistic
-                // sidebar order if refreshing the list temporarily fails.
-            }
-
-            if (textareaRef.current) {
-                textareaRef.current.style.height =
-                    "auto";
-            }
+        if (!sent) {
+            setMessage((current) => current || submittedMessage);
+            requestAnimationFrame(() => {
+                if (textareaRef.current) {
+                    textareaRef.current.style.height = "auto";
+                    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 160)}px`;
+                }
+            });
         }
     };
 
@@ -98,11 +78,8 @@ export default function ChatInput({
                     placeholder={
                         loading
                             ? "Working..."
-                            : canSend
-                                ? "Ask anything about your documents..."
-                                : "Choose one or more documents, or switch to All Documents"
+                            : "Ask anything about your research..."
                     }
-                    disabled={loading || !canSend}
                     aria-label="Message"
                     className="max-h-40 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm leading-6 text-white placeholder:text-slate-500 outline-none"
                 />
@@ -114,8 +91,7 @@ export default function ChatInput({
                     }}
                     disabled={
                         loading ||
-                        !message.trim() ||
-                        !canSend
+                        !message.trim()
                     }
                     aria-label="Send message"
                     className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 p-0 text-white shadow-lg shadow-blue-950/20 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
@@ -129,9 +105,7 @@ export default function ChatInput({
             </div>
 
             <p className="mt-2 text-center text-[11px] text-slate-600">
-                {canSend
-                    ? "AI responses may contain mistakes. Verify important information."
-                    : "Select a document scope before sending your question."}
+                AI responses may contain mistakes. Verify important information.
             </p>
         </div>
     );

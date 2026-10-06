@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import { Bot, User, Copy, Check } from "lucide-react";
-import { useState } from "react";
-import MarkdownContent from "./MarkdownContent";
+import { lazy, Suspense, useState } from "react";
+
+const MarkdownContent = lazy(() => import("./MarkdownContent"));
 
 interface Props {
     role: "user" | "assistant";
@@ -36,19 +37,21 @@ export default function ChatMessage({ role, content }: Props) {
                     {isUser ? <User size={16} /> : <Bot size={16} />}
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className={clsx("flex min-w-0 flex-col gap-1", isUser ? "max-w-full" : "w-full")}>
                     <div
                         className={clsx(
                             "px-3.5 py-2.5 text-[15px] leading-6 transition-colors sm:px-4",
                             isUser
                                 ? "rounded-2xl rounded-tr-md bg-blue-600 text-white shadow-sm shadow-blue-950/20"
-                                : "max-w-full rounded-xl border border-white/8 bg-white/[0.025] text-slate-200"
+                                : "min-w-0 max-w-full rounded-xl border border-white/8 bg-white/[0.025] text-slate-200"
                         )}
                     >
                         {isUser ? (
                             <p className="whitespace-pre-wrap break-words leading-7">{content}</p>
                         ) : (
-                            <MarkdownContent content={content} />
+                            <Suspense fallback={<p className="text-sm text-slate-400">Rendering response…</p>}>
+                                <MarkdownContent content={content} />
+                            </Suspense>
                         )}
                     </div>
 
