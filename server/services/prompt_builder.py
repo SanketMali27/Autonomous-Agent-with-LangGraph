@@ -63,10 +63,20 @@ Question:
 {question}
 """
 
-PYTHON_PROMPT = """Generate only executable Python code for the request.
-Do not use markdown, explanations, network access, file deletion, or unrelated code.
+PYTHON_PROMPT = """
+Generate only executable Python code for the user's request.
 
-Request:
+Rules:
+- Generate Python only.
+- Do not use network access.
+- Do not read or write arbitrary files.
+- Do not use subprocess, os, socket, ctypes, multiprocessing, eval, exec, or __import__.
+- Keep execution lightweight.
+- Print the final result.
+- Do not use markdown.
+- Do not include explanations.
+
+User request:
 {question}
 """
 

@@ -1,16 +1,19 @@
 from graph.router import rule_based_router
 from infrastructure.semantic_cache import semantic_cache
 
-
 def semantic_cache_check_node(state):
     question = state["question"]
 
     route = rule_based_router(question)
 
+    print("🧠 SEMANTIC CACHE")
+    print("Question:", question)
+    print("Rule route:", route)
+
     state["cache_route"] = route
 
-    # Semantic cache is currently only for natural queries.
     if route != "natural":
+        print("⏭️ Skipping semantic cache")
         state["semantic_cache_hit"] = False
         return state
 
@@ -19,6 +22,8 @@ def semantic_cache_check_node(state):
         user_id=state["user_id"],
         route=route,
     )
+
+    print("Semantic result:", "HIT" if answer else "MISS")
 
     if answer:
         state["answer"] = answer

@@ -1,5 +1,6 @@
-from app.llm import llm
 
-response = llm.invoke("hii")
+from graph.router import rule_based_router
 
-print(response.content)
+ans=rule_based_router("What is the capital of France?")
+print("Question: What is the capital of France?")
+print(ans)

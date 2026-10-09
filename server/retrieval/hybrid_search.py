@@ -17,7 +17,7 @@ class HybridSearcher:
 
     def search( self,
     query: str,
-    limit: int = 5,
+    limit: int = 10,
     user_id: str = None,
     document_ids: list[str] | None = None):
 

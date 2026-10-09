@@ -11,7 +11,7 @@ class SemanticCacheService:
     COLLECTION = "semantic_cache"
 
     TTL_SECONDS = 6 * 60 * 60
-    SIMILARITY_THRESHOLD = 0.90
+    SIMILARITY_THRESHOLD = 0.80
 
     def __init__(
         self,
@@ -26,12 +26,9 @@ class SemanticCacheService:
             vector_size=self.embeddings.dimension,
         )
 
-    def search(
-        self,
-        question: str,
-        user_id: str,
-        route: str,
-    ):
+    def search(self, question: str, user_id: str, route: str):
+        print("🔎 Semantic search:", question)
+
         vector = self.embeddings.embed([question])[0]
 
         points = self.qdrant.search(
@@ -41,34 +38,44 @@ class SemanticCacheService:
             limit=1,
         )
 
+        print("Qdrant points:", len(points))
+
         if not points:
+            print("❌ No semantic cache points")
             return None
 
         point = points[0]
 
-        if point.score < self.SIMILARITY_THRESHOLD:
-            return None
+        print("Similarity:", point.score)
 
         payload = point.payload or {}
 
+        print("Cached route:", payload.get("route"))
+        print("Requested route:", route)
+        print("Expires:", payload.get("expires_at"))
+
+        if point.score < self.SIMILARITY_THRESHOLD:
+            print("❌ Similarity below threshold")
+            return None
+
         if payload.get("route") != route:
+            print("❌ Route mismatch")
             return None
 
         expires_at = payload.get("expires_at")
 
         if not expires_at:
+            print("❌ No expiry")
             return None
 
-        try:
-            expiry = datetime.fromisoformat(expires_at)
+        expiry = datetime.fromisoformat(expires_at)
 
-            if datetime.now(timezone.utc) >= expiry:
-                self.delete(point.id)
-                return None
-
-        except (ValueError, TypeError):
+        if datetime.now(timezone.utc) >= expiry:
+            print("⌛ Cache expired")
             self.delete(point.id)
             return None
+
+        print("✅ SEMANTIC CACHE HIT")
 
         return payload.get("answer")
 

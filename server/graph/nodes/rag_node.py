@@ -4,9 +4,11 @@ from retrieval.hybrid_search import HybridSearcher
 from services.prompt_builder import RAG_PROMPT
 from app.guardrails.service import GuardrailService
 from nemoguardrails.rails.llm.options import RailStatus
+from retrieval.reranker import Reranker
 
 searcher = HybridSearcher()
 guardrail_service = GuardrailService()
+reranker = Reranker()
 
 async def rag_node(state: AgentState):
 
@@ -32,10 +34,19 @@ async def rag_node(state: AgentState):
     
     docs = searcher.search(
         state["question"],
-        limit=5,
+        limit=10,
         user_id=state.get("user_id"),
         document_ids=state.get("document_ids"),
     )
+    print("Retrieved docs:", docs)
+
+    docs = reranker.rerank(
+        question=state["question"],
+        docs=docs,
+        top_k=5,
+    )
+
+    print("Reranked docs:", docs)
 
     context = "\n\n".join(
         doc["text"] for doc in docs

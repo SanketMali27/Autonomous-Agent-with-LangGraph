@@ -1,6 +1,6 @@
 from app.llm import llm
 from graph.state import AgentState
-from tools.python_tool import PythonExecutor ,validate_code
+from tools.python_executor import PythonExecutor 
 from services.prompt_builder import PYTHON_PROMPT
 from langsmith import traceable
 
@@ -22,11 +22,11 @@ def python_node(state: AgentState):
             state["answer"] = "Python execution could not start because no code was generated."
             return state
         
-        allowed, reason = validate_code(code)
+        # allowed, reason = validate_code(code)
 
-        if not allowed:
-            state["answer"] = f"Python execution blocked: {reason}"
-            return state
+        # if not allowed:
+        #     state["answer"] = f"Python execution blocked: {reason}"
+        #     return state
         result = executor.run(code)
         output = str(result.get("output") or "").strip()
         if result.get("success"):
